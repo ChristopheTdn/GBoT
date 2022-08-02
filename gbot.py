@@ -345,7 +345,7 @@ class GBot(commands.Bot):
             await message.channel.send("**Commande GBoT :**\n\
 • `!planning` : renvois le planning de la journée.\n\
 • `!streamer` : renvois le streamer actuel du créneau horaire.\n\
-• `!lurk` : renvois la liste des spartiates qui ont visualisé le stream en cours.\n\
+• `!lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
 • `!bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
 • `!raid` : tuto pour réaliser un raid.\n\
 • `!invit` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
