@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.ERROR,
 
 # Constantes
 
-PLANNING_SPARTIATE =""
+BLACK = Fore.BLACK
 RED = Fore.LIGHTRED_EX
 BLUE = Fore.LIGHTBLUE_EX
 GREEN = Fore.LIGHTGREEN_EX
@@ -92,9 +92,10 @@ class GBot(commands.Bot):
         self.bg_task_RecupereSpartiate = self.loop.create_task(self.enregistreSpartiate())
         self.bg_task_RecuperePlanning = self.loop.create_task(self.enregistrePlanning())
         self.bg_task_EcrisPresence = self.loop.create_task(self.envoisPresence())
+        
         timer = RepeatTimer(4*60, SessionSpartiate)
         timer.start()
-               
+        
         print (RED + "> "+CYAN+"GBoT Process correctement initialisé.")
         
         SessionSpartiate()
