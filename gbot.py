@@ -57,6 +57,11 @@ class GBot(commands.Bot):
             streamer TEXT,
             UNIQUE(planning)
             )''')
+        curseur.execute('''CREATE TABLE IF NOT EXISTS Spartiate(
+            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+            pseudo TEXT UNIQUE,
+            score INTEGER
+            )''')
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("00h00 - 01h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("01h00 - 02h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("02h00 - 03h00 :"," "))
@@ -81,6 +86,7 @@ class GBot(commands.Bot):
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("21h00 - 22h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("22h00 - 23h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("23h00 - 00h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score) VALUES (?,?)''', ("none",0))
         self.connexionSQL.commit()
         self.connexionSQL.close()
 
@@ -124,12 +130,27 @@ class GBot(commands.Bot):
                 
                 channel = self.get_channel(idChannel) 
 
+                self.connexionSQL = sqlite3.connect("basededonnees.sqlite")
+                cur = self.connexionSQL.cursor()
+                cur.execute("SELECT * FROM 'Spartiate'")
+                rows = cur.fetchall()                
                 chatters = chatters.split("\n") 
                 reponse =  "**"+chatters[0]+"**\n"              
                 del chatters[0]
                 for chatter in chatters:
                     if chatter !="" :
                         reponse += "`"+chatter+"`\n"
+                        flagTrouve = False
+                        for spartiate in rows :
+                            if spartiate[1] == chatter :
+                                score = spartiate[2] + 1
+                                flagTrouve = True
+                                cur.execute("UPDATE Spartiate SET score = "+str(score)+" WHERE pseudo  = '"+chatter+"'")
+                            if flagTrouve == False :
+                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score) VALUES (?,?)''', (chatter,1))                       
+                self.connexionSQL.commit()
+                self.connexionSQL.close()    
+                        
                 await channel.send(reponse) 
                 
             #Envois message horaire Streamer en ligne Spartiate  
@@ -297,7 +318,7 @@ class GBot(commands.Bot):
 
     async def on_message(self, message):
            
-        self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
+ 
         # Commande !lurk
         if message.content.startswith("!lurk"):            
             fichierLocal = open("chatters.txt","r")
