@@ -111,7 +111,7 @@ class GBot(commands.Bot):
     async def envoisPresence(self):
         await self.wait_until_ready()
         while not self.is_closed():
-            if datetime.now().hour< 1 or datetime.now().hour >=13 and datetime.now().minute == 59 :
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
                 idChannel = self.recupereIDChannelPresence()
                 fichierLocal = open("chatters.txt","r")
                 chatters = fichierLocal.read()
