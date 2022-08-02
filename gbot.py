@@ -173,7 +173,7 @@ class GBot(commands.Bot):
             members = self.get_all_members()
             with open("spartiates.txt", "w") as fichier:
                 for member in members:
-                    fichier.write(member.display_name+"\n")
+                    fichier.write(member.display_name.lower()+"\n")
             await asyncio.sleep(30) 
 
     def recupereIDChannelPlanning(self):
@@ -221,7 +221,7 @@ class GBot(commands.Bot):
                             ligneCut[4] = user.display_name
                         nom_streamer = ligneCut[4] 
 
-                    curseur.execute("UPDATE GBoT SET streamer = '"+nom_streamer+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'")
+                    curseur.execute("UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'")
 
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
