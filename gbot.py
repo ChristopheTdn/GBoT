@@ -270,7 +270,9 @@ class GBot(commands.Bot):
                 fichier.write(planning)
         with open("streamer.txt", "w") as fichier2:
                 fichier2.write(streamer)                
-                
+        if streamer == "vide" :
+            with open("chatter.txt", "w") as fichier3:
+                fichier2.write("vide")          
         return 
 
     async def on_message(self, message):
