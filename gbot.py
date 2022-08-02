@@ -264,6 +264,8 @@ class GBot(commands.Bot):
                 planning += creneau[1]+" "+creneau[2]+"\n"
                 if creneau[1] == creneauActuel :
                     streamer = creneau[2]
+
+            
         with open("planning.txt", "w") as fichier:
                 fichier.write(planning)
         with open("streamer.txt", "w") as fichier2:
@@ -313,6 +315,16 @@ class GBot(commands.Bot):
 3. Ça t'ouvre un page, tu notes le pseudo de la personne que tu dois raid et tu appuis sur « Lancer un raid » qui se trouve en bas à droite.\n\
 4. Tu attends les 10 secondes demandées.\n\
 5. Tu appuies sur « Lancer un raid maintenant ».\n")
+            
+        if message.content.startswith("!aide") or message.content.startswith("!gbot"):
+            await message.channel.send("**Commande GBoT :**\n\
+• `!planning` : renvois le planning de la journée.\n\
+• `!streamer` : renvois le streamer actuel du créneau horaire.\n\
+• `!lurk` : renvois la liste des spartiates qui ont visualisé le stream en cours.\n\
+• `!bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
+• `!raid` : tuto pour réaliser un raid.\n\
+• `!aide` ou `!gbot`: cette aide.\n\
+")
 
         print (message.author,":",message.content)
 
