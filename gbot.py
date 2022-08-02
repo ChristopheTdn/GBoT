@@ -95,10 +95,13 @@ class GBot(commands.Bot):
         
         timer = RepeatTimer(4*60, SessionSpartiate)
         timer.start()
+ 
+        await self.wait_until_ready()
         
         print (RED + "> "+CYAN+"GBoT Process correctement initialisé.")
         
         SessionSpartiate()
+        
          
     def AfficheMenu(self):
         print("\n",BBLACK,"                         "+BBLUE+YELLOW+ "SPARTAN VIEWERSPY"+BBLACK+"\n")
