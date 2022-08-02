@@ -337,6 +337,9 @@ class GBot(commands.Bot):
 3. Ça t'ouvre un page, tu notes le pseudo de la personne que tu dois raid et tu appuis sur « Lancer un raid » qui se trouve en bas à droite.\n\
 4. Tu attends les 10 secondes demandées.\n\
 5. Tu appuies sur « Lancer un raid maintenant ».\n")
+
+        if message.content.startswith("!invit"):
+            await message.channel.send("Invitez vos contacts à rejoindre le discord SPARTIATES à partir de ce lien: https://discord.gg/mStTrZGUEh")
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
             await message.channel.send("**Commande GBoT :**\n\
@@ -345,8 +348,11 @@ class GBot(commands.Bot):
 • `!lurk` : renvois la liste des spartiates qui ont visualisé le stream en cours.\n\
 • `!bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
 • `!raid` : tuto pour réaliser un raid.\n\
+• `!invit` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
 • `!aide` ou `!gbot`: cette aide.\n\
 ")
+
+
 
         print (message.author,":",message.content)
 
