@@ -91,7 +91,7 @@ class GBot(commands.Bot):
         self.AfficheMenu()
         self.bg_task_RecupereSpartiate = self.loop.create_task(self.enregistreSpartiate())
         self.bg_task_RecuperePlanning = self.loop.create_task(self.enregistrePlanning())
-        self.bg_task_EcrisPresence = self.loop.create_task(self.envoisPresence())
+        self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage())
         
         timer = RepeatTimer(4*60, SessionSpartiate)
         timer.start()
@@ -112,9 +112,10 @@ class GBot(commands.Bot):
         '''
 
 
-    async def envoisPresence(self):
+    async def envoisMessage(self):
         await self.wait_until_ready()
         while not self.is_closed():
+            #Envois message horaire presence Spartiate
             if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
                 idChannel = self.recupereIDChannelPresence()
                 fichierLocal = open("chatters.txt","r")
@@ -129,7 +130,22 @@ class GBot(commands.Bot):
                 for chatter in chatters:
                     if chatter !="" :
                         reponse += "`"+chatter+"`\n"
-                await channel.send(reponse)    
+                await channel.send(reponse) 
+                
+            #Envois message horaire Streamer en ligne Spartiate  
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
+                fichierLocal2 = open("streamer.txt","r")
+                streamer = fichierLocal2.read()
+                fichierLocal2.close
+                if streamer != "vide" :
+                    idChannel = 979853240642437171
+                    channel = self.get_channel(idChannel)
+                    messages = await channel.history(limit=10).flatten()
+                    for message in messages :
+                        await message.delete()
+                    reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
+                    await channel.send("Donnez de la force à "+reponse)
+                
             await asyncio.sleep(60)
 
     def recupereIDChannelPresence(self):
