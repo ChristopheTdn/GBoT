@@ -339,7 +339,7 @@ class GBot(commands.Bot):
 5. Tu appuies sur « Lancer un raid maintenant ».\n")
 
         if message.content.startswith("!invit"):
-            await message.channel.send("Invitez vos contacts à rejoindre le discord SPARTIATES à partir de ce lien: https://discord.gg/mStTrZGUEh")
+            await message.channel.send("Invitez vos contacts à rejoindre le discord SPARTIATES à partir de ce lien: https://discord.gg/PFWquSPp87")
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
             await message.channel.send("**Commande GBoT :**\n\
