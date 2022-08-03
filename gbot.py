@@ -122,7 +122,7 @@ class GBot(commands.Bot):
         await self.wait_until_ready()
         while not self.is_closed():
             #Envois message horaire presence Spartiate
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 8 :
                 idChannel = self.recupereIDChannelPresence()
                 fichierLocal = open("chatters.txt","r")
                 chatters = fichierLocal.read()
@@ -147,11 +147,23 @@ class GBot(commands.Bot):
                                 flagTrouve = True
                                 cur.execute("UPDATE Spartiate SET score = "+str(score)+" WHERE pseudo  = '"+chatter+"'")
                             if flagTrouve == False :
-                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score) VALUES (?,?)''', (chatter,1))                       
+                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score) VALUES (?,?)''', (chatter,1))  
+                reponse2 =""                
+                if datetime.now().hour < 1: 
+                    cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
+                    rows = cur.fetchall()
+                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__\n'
+                    for data in rows :
+                        (spartiate,score) = data
+                        reponse2 += "`"+spartiate+"`" + " : "+ str(score) +"\n"
+                            
                 self.connexionSQL.commit()
                 self.connexionSQL.close()    
                         
                 await channel.send(reponse) 
+                await channel.send(reponse2)
+
+
                 
             #Envois message horaire Streamer en ligne Spartiate  
             if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
@@ -373,7 +385,7 @@ class GBot(commands.Bot):
                     (spartiate,score) = data
                     sortieFlux += "`"+spartiate+"`" + " : "+ str(score) +"\n"
             else :
-                sortieFlux = ':medal: __**Score des SPARTIATES présent sur la journée :**__\n Absence de resultat en dehors des creneaux horaires de stream.'         
+                sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__\n Absence de resultat en dehors des creneaux horaires de stream.'         
             await message.channel.send(sortieFlux)
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
