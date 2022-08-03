@@ -121,9 +121,25 @@ class GBot(commands.Bot):
     async def envoisMessage(self):
         await self.wait_until_ready()
         while not self.is_closed():
-            # minute 59
+            
+            # minute 1    
+            #Envois message horaire Streamer en ligne Spartiate  
+            if (datetime.now().hour < 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
+                fichierLocal2 = open("streamer.txt","r")
+                streamer = fichierLocal2.read()
+                fichierLocal2.close
+                if streamer != "vide" :
+                    idChannel = 979853240642437171
+                    channel = self.get_channel(idChannel)
+                    messages = await channel.history(limit=10).flatten()
+                    for message in messages :
+                        await message.delete()
+                    reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
+                    await channel.send("Donnez de la force à "+reponse)
+                    
+            # minute 58
             #Envois message horaire presence Spartiate
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 58 :
                 idChannel = self.recupereIDChannelPresence()
                 fichierLocal = open("chatters.txt","r")
                 chatters = fichierLocal.read()
@@ -161,24 +177,12 @@ class GBot(commands.Bot):
                 self.connexionSQL.commit()
                 self.connexionSQL.close()    
                         
-                await channel.send(reponse) 
-                await channel.send(reponse2)
+                await channel.send(reponse)
+                if reponse2 != "": 
+                    await channel.send(reponse2)
 
 
-            # minute 1    
-            #Envois message horaire Streamer en ligne Spartiate  
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
-                fichierLocal2 = open("streamer.txt","r")
-                streamer = fichierLocal2.read()
-                fichierLocal2.close
-                if streamer != "vide" :
-                    idChannel = 979853240642437171
-                    channel = self.get_channel(idChannel)
-                    messages = await channel.history(limit=10).flatten()
-                    for message in messages :
-                        await message.delete()
-                    reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
-                    await channel.send("Donnez de la force à "+reponse)
+
                 
             await asyncio.sleep(60)
 

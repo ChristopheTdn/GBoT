@@ -11,7 +11,7 @@
  
 DAEMON="~/GBoT/gbot.py" #ligne de commande du programme, attention à l'extension .py.
 daemon_OPT=""  #argument à utiliser par le programme - Remplacer Utilisateur par votre nom de login
-DAEMONUSER="user" #utilisateur du programme
+DAEMONUSER="root" #utilisateur du programme
 daemon_NAME="gbot.py" #Nom du programme (doit être identique à l'exécutable).
 #Attention le script est un script bash, le script ne portera donc pas l'extension .py mais .sh.
  
