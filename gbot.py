@@ -101,14 +101,14 @@ class GBot(commands.Bot):
         
         timer = RepeatTimer(4*60, SessionSpartiate)
         timer.start()
- 
+
         await self.wait_until_ready()
         
         print (RED + "> "+CYAN+"GBoT Process correctement initialisé.")
         
         SessionSpartiate()
         
-         
+
     def AfficheMenu(self):
         print("\n",BBLACK,"                         "+BBLUE+YELLOW+ "SPARTAN VIEWERSPY"+BBLACK+"\n")
         '''
@@ -359,8 +359,19 @@ class GBot(commands.Bot):
 4. Tu attends les 10 secondes demandées.\n\
 5. Tu appuies sur « Lancer un raid maintenant ».\n")
 
-        if message.content.startswith("!invit"):
+        if message.content.startswith("!pub"):
             await message.channel.send("Invitez vos contacts à rejoindre le discord SPARTIATES à partir de ce lien: https://discord.gg/PFWquSPp87")
+            
+        if message.content.startswith("!score"):
+            self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
+            cur = self.connexionSQL.cursor()
+            cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
+            rows = cur.fetchall()
+            sortieFlux ='__**Classement des SPARTIATES pour la journée :**__\n'
+            for data in rows :
+                (spartiate,score) = data
+                sortieFlux += "`"+spartiate+"`" + " : "+ str(score) +"\n"
+            await message.channel.send(sortieFlux)
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
             await message.channel.send("**Commande GBoT :**\n\
@@ -369,7 +380,8 @@ class GBot(commands.Bot):
 • `!lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
 • `!bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
 • `!raid` : tuto pour réaliser un raid.\n\
-• `!invit` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
+• `!pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
+• `!score` : Obtient les scores des spartiates pour la journée en cours.\n\
 • `!aide` ou `!gbot`: cette aide.\n\
 ")
 
