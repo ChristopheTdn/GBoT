@@ -180,9 +180,6 @@ class GBot(commands.Bot):
                 await channel.send(reponse)
                 if reponse2 != "": 
                     await channel.send(reponse2)
-
-
-
                 
             await asyncio.sleep(60)
 
