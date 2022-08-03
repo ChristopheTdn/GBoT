@@ -121,8 +121,9 @@ class GBot(commands.Bot):
     async def envoisMessage(self):
         await self.wait_until_ready()
         while not self.is_closed():
+            # minute 59
             #Envois message horaire presence Spartiate
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 8 :
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
                 idChannel = self.recupereIDChannelPresence()
                 fichierLocal = open("chatters.txt","r")
                 chatters = fichierLocal.read()
@@ -164,7 +165,7 @@ class GBot(commands.Bot):
                 await channel.send(reponse2)
 
 
-                
+            # minute 1    
             #Envois message horaire Streamer en ligne Spartiate  
             if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
                 fichierLocal2 = open("streamer.txt","r")
@@ -380,12 +381,12 @@ class GBot(commands.Bot):
                 cur = self.connexionSQL.cursor()
                 cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
                 rows = cur.fetchall()
-                sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__\n'
+                sortieFlux =':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n'
                 for data in rows :
                     (spartiate,score) = data
                     sortieFlux += "`"+spartiate+"`" + " : "+ str(score) +"\n"
             else :
-                sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__\n Absence de resultat en dehors des creneaux horaires de stream.'         
+                sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n Absence de resultat en dehors des creneaux horaires de stream.'         
             await message.channel.send(sortieFlux)
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
