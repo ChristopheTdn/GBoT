@@ -9,9 +9,9 @@
 # Short-Description: description du programme
 ### END INIT INFO
  
-DAEMON="/opt/gbot/gbot.py" #ligne de commande du programme, attention à l'extension .py.
-daemon_OPT="-d -p -f /home/root/GBoT/gbot.ini"  #argument à utiliser par le programme - Remplacer Utilisateur par votre nom de login
-DAEMONUSER="root" #utilisateur du programme
+DAEMON="~/GBoT/gbot.py" #ligne de commande du programme, attention à l'extension .py.
+daemon_OPT=""  #argument à utiliser par le programme - Remplacer Utilisateur par votre nom de login
+DAEMONUSER="user" #utilisateur du programme
 daemon_NAME="gbot.py" #Nom du programme (doit être identique à l'exécutable).
 #Attention le script est un script bash, le script ne portera donc pas l'extension .py mais .sh.
  
