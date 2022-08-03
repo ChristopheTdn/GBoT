@@ -363,14 +363,17 @@ class GBot(commands.Bot):
             await message.channel.send("Invitez vos contacts à rejoindre le discord SPARTIATES à partir de ce lien: https://discord.gg/PFWquSPp87")
             
         if message.content.startswith("!score"):
-            self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
-            cur = self.connexionSQL.cursor()
-            cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
-            rows = cur.fetchall()
-            sortieFlux ='__**Classement des SPARTIATES pour la journée :**__\n'
-            for data in rows :
-                (spartiate,score) = data
-                sortieFlux += "`"+spartiate+"`" + " : "+ str(score) +"\n"
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) : 
+                self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
+                cur = self.connexionSQL.cursor()
+                cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
+                rows = cur.fetchall()
+                sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__\n'
+                for data in rows :
+                    (spartiate,score) = data
+                    sortieFlux += "`"+spartiate+"`" + " : "+ str(score) +"\n"
+            else :
+                sortieFlux = ':medal: __**Score des SPARTIATES présent sur la journée :**__\n Absence de resultat en dehors des creneaux horaires de stream.'         
             await message.channel.send(sortieFlux)
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
