@@ -414,7 +414,7 @@ class GBot(commands.Bot):
             
 if __name__ == "__main__":
     
-    load_dotenv(dotenv_path="config")
+    load_dotenv(dotenv_path=os.path.join(GBOTPATH,"config"))
     bot = GBot()
     bot.run(os.getenv("TOKEN"))
     
