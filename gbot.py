@@ -376,7 +376,11 @@ class GBot(commands.Bot):
 5. Tu appuies sur « Lancer un raid maintenant ».\n")
 
         if message.content.startswith("!pub"):
-            await message.channel.send("Invitez vos contacts à rejoindre le discord SPARTIATES à partir de ce lien: https://discord.gg/PFWquSPp87")
+            await message.channel.send("Bonjour à toi jeune streamer/streameuse,\
+tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"Spartiates Entraide Twitch\"**__ est là pour te donner un coup de pouce.\n\
+\nLe principe est simple, il y a plusieurs horaires sous forme de créneaux disponibles du lundi au vendredi, il suffit simplement de t'inscrire à l'un d'entre eux pour recevoir un raid et voir ton nombre de viewers grimper en flèche et ton tchat se déchaîner.\n\
+\nÉvidemment, l'entraide est le mot d'ordre, alors on compte également sur toi pour faire parti(e) de la chaîne des raids et être présent(e) sur les streams des autres personnes qui adhèrent à ce projet.\n\
+\nAllez n'attend pas plus longtemps et deviens toi aussi un Spartiate en rejoignant ce serveur ici : https://discord.gg/SzDnhgEWrn )\n")
             
         if message.content.startswith("!score"):
             if (datetime.now().hour< 1 or datetime.now().hour >=13) : 
