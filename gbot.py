@@ -169,13 +169,19 @@ class GBot(commands.Bot):
                                 cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score) VALUES (?,?)''', (chatter,1))  
                 reponse2 =""                
                 if datetime.now().hour < 1: 
+                    # Recupere les scores pour les afficher une derniere fois
                     cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
                     rows = cur.fetchall()
                     reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__\n'
                     for data in rows :
                         (spartiate,score) = data
                         reponse2 += "`"+spartiate+"`" + " : "+ str(score) +"\n"
-                            
+                    # Remet les score a 0
+                    cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
+                    rows = cur.fetchall()
+                    for data in rows :
+                        (spartiate,score) = data
+                        cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
                 self.connexionSQL.commit()
                 self.connexionSQL.close()    
                         
@@ -405,7 +411,7 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 • `!raid` : tuto pour réaliser un raid.\n\
 • `!pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
 • `!score` : Obtient les scores des spartiates pour la journée en cours.\n\
-• `!aide` ou `!gbot`: cette aide.\n\
+• `!aide` ou `!gbot` : cette aide.\n\
 ")
 
 
