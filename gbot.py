@@ -244,7 +244,7 @@ class GBot(commands.Bot):
                 message = await channel.history(limit=1,oldest_first=True).flatten()
                 messageTotal = message[0].content
                 ligneMessage = messageTotal.split("\n")
-                self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
                 curseur = self.connexionSQL.cursor()
                 for ligne in  ligneMessage :
                     ligne = re.sub(r' +', ' ', ligne)
@@ -275,7 +275,7 @@ class GBot(commands.Bot):
                         "22h00 - 23h00 :",
                         "23h00 - 00h00 :",
                         "00h00 - 01h00 :"]
-                self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
                 curseur = self.connexionSQL.cursor()
                 for creneau in listeCreneau:
                     curseur.execute("UPDATE GBoT SET streamer = 'vide' WHERE planning = '"+creneau+"'")
@@ -291,7 +291,7 @@ class GBot(commands.Bot):
             return (debut + " - "+ fin +" :") 
       
     def sauvePlanning(self):
-        self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
         creneauActuel = self.DetermineCreneau()
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT * FROM 'GBoT'")
@@ -380,7 +380,7 @@ class GBot(commands.Bot):
             
         if message.content.startswith("!score"):
             if (datetime.now().hour< 1 or datetime.now().hour >=13) : 
-                self.connexionSQL = sqlite3.connect("basededonnees.sqlite") 
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
                 cur = self.connexionSQL.cursor()
                 cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
                 rows = cur.fetchall()
