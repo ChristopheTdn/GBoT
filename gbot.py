@@ -42,8 +42,7 @@ BBLACK = Back.BLACK
 BYELLOW = Back.LIGHTYELLOW_EX
 BBLUE = Back.BLUE
 
-filePath = __file__
-GBOTPATH, filename = os.path.split(filePath)
+GBOTPATH, filename = os.path.split(__file__)
 
 class GBot(commands.Bot):
 

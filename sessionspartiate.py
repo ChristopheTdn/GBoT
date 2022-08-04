@@ -20,6 +20,8 @@ BBLACK = Back.BLACK
 BYELLOW = Back.LIGHTYELLOW_EX
 BBLUE = Back.BLUE
 
+GBOTPATH, filename = os.path.split(__file__)
+
 class SessionSpartiate:
 
         def __init__(self):
@@ -40,7 +42,7 @@ class SessionSpartiate:
 
         
         def ObtenirSpartiateDejaPresent(self,creneauHoraire):
-            repertoire = os.path.join("data",datetime.now().strftime("%Y-%m-%d"))
+            repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
             os.makedirs(repertoire, exist_ok=True) 
             name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
             chatters =[]
@@ -53,7 +55,7 @@ class SessionSpartiate:
             return chatters
                 
         def SauvegardeCreneauHoraire (self,creneauHoraire,listeSpartiate):
-            repertoire = os.path.join("data",datetime.now().strftime("%Y-%m-%d"))
+            repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
             os.makedirs(repertoire, exist_ok=True) 
             name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
             chatters =[]
@@ -63,7 +65,7 @@ class SessionSpartiate:
                 fichierLocal.write(spartiate+'\n')
             fichierLocal.close
             
-            name = "chatters.txt"
+            name = os.path.join(GBOTPATH,"chatters.txt")
             chatters =[]
             fichierLocal = open(name,"w")
             fichierLocal.write(creneauHoraire+'\n')
@@ -84,7 +86,7 @@ class SessionSpartiate:
             Renvois la liste des Spartiates en lignes
             '''
             # Recupere la liste des SPARTIATES
-            fichierLocal = open("spartiates.txt","r")
+            fichierLocal = open(os.path.join(GBOTPATH,"spartiates.txt"),"r")
             listeSpartiate =  fichierLocal.read().split("\n")
             listeSpartiate =  [x.lower() for x in listeSpartiate]
             fichierLocal.close
@@ -145,7 +147,7 @@ class SessionSpartiate:
             recupere le nom du streamer en fonction du creneau horaire dans le fichier planning.txt
             '''
             streamer=""
-            fichierLocal = open("streamer.txt","r")
+            fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
             streamer = fichierLocal.read()
             fichierLocal.close
             if (streamer=="" or streamer == "vide"):
