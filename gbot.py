@@ -143,7 +143,7 @@ class GBot(commands.Bot):
             #Envois message horaire presence Spartiate
             if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 58 :
                 idChannel = self.recupereIDChannelPresence()
-                fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt","r"))
+                fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt"),"r")
                 chatters = fichierLocal.read()
                 fichierLocal.close
                 
@@ -208,7 +208,7 @@ class GBot(commands.Bot):
         await self.wait_until_ready()
         while not self.is_closed():
             members = self.get_all_members()
-            with open(os.path.join(GBOTPATH,"spartiates.txt", "w")) as fichier:
+            with open(os.path.join(GBOTPATH,"spartiates.txt"), "w") as fichier:
                 for member in members:
                     fichier.write(member.display_name.lower()+"\n")
             await asyncio.sleep(30) 
@@ -323,12 +323,12 @@ class GBot(commands.Bot):
                     streamer = creneau[2]
 
             
-        with open(os.path.join(GBOTPATH,"planning.txt", "w")) as fichier:
+        with open(os.path.join(GBOTPATH,"planning.txt"), "w") as fichier:
                 fichier.write(planning)
-        with open(os.path.join(GBOTPATH,"streamer.txt", "w")) as fichier2:
+        with open(os.path.join(GBOTPATH,"streamer.txt"), "w") as fichier2:
                 fichier2.write(streamer)                
         if streamer == "vide" :
-            with open(os.path.join(GBOTPATH,"chatters.txt", "w")) as fichier3:
+            with open(os.path.join(GBOTPATH,"chatters.txt"), "w") as fichier3:
                 fichier3.write("vide")          
         return 
 
@@ -337,19 +337,19 @@ class GBot(commands.Bot):
  
         # Commande !lurk
         if message.content.startswith("!lurk"):            
-            fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt","r"))
+            fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt"),"r")
             chatters = fichierLocal.read()
             fichierLocal.close
             await message.channel.send("`"+chatters+"`")
             
         if message.content.startswith("!planning"): 
-            fichierLocal = open(os.path.join(GBOTPATH,"planning.txt","r"))
+            fichierLocal = open(os.path.join(GBOTPATH,"planning.txt"),"r")
             planning = fichierLocal.read()
             fichierLocal.close
             await message.channel.send("`"+planning+"`")
 
         if message.content.startswith("!streamer"): 
-            fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt","r"))
+            fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
             streamer = fichierLocal.read()
             fichierLocal.close
             if streamer != "vide" :
