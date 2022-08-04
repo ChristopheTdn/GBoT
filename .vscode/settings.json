@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:GBoT}/basededonnees.sqlite",
+            "name": "gbot"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}

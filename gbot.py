@@ -42,6 +42,9 @@ BBLACK = Back.BLACK
 BYELLOW = Back.LIGHTYELLOW_EX
 BBLUE = Back.BLUE
 
+filePath = __file__
+GBOTPATH, filename = os.path.split(filePath)
+
 class GBot(commands.Bot):
 
     def __init__(self, *args, **kwargs):
@@ -49,7 +52,7 @@ class GBot(commands.Bot):
         intents.messages = True
         intents.members = True
         super().__init__(command_prefix="!",intents = intents)
-        self.connexionSQL = sqlite3.connect("basededonnees.sqlite")
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         curseur = self.connexionSQL.cursor()
         curseur.execute('''CREATE TABLE IF NOT EXISTS GBoT(
             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -125,7 +128,7 @@ class GBot(commands.Bot):
             # minute 1    
             #Envois message horaire Streamer en ligne Spartiate  
             if (datetime.now().hour < 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
-                fichierLocal2 = open("streamer.txt","r")
+                fichierLocal2 = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
                 streamer = fichierLocal2.read()
                 fichierLocal2.close
                 if streamer != "vide" :
@@ -141,13 +144,13 @@ class GBot(commands.Bot):
             #Envois message horaire presence Spartiate
             if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 58 :
                 idChannel = self.recupereIDChannelPresence()
-                fichierLocal = open("chatters.txt","r")
+                fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt","r"))
                 chatters = fichierLocal.read()
                 fichierLocal.close
                 
                 channel = self.get_channel(idChannel) 
 
-                self.connexionSQL = sqlite3.connect("basededonnees.sqlite")
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
                 cur = self.connexionSQL.cursor()
                 cur.execute("SELECT * FROM 'Spartiate'")
                 rows = cur.fetchall()                
@@ -206,7 +209,7 @@ class GBot(commands.Bot):
         await self.wait_until_ready()
         while not self.is_closed():
             members = self.get_all_members()
-            with open("spartiates.txt", "w") as fichier:
+            with open(os.path.join(GBOTPATH,"spartiates.txt", "w")) as fichier:
                 for member in members:
                     fichier.write(member.display_name.lower()+"\n")
             await asyncio.sleep(30) 
@@ -321,12 +324,12 @@ class GBot(commands.Bot):
                     streamer = creneau[2]
 
             
-        with open("planning.txt", "w") as fichier:
+        with open(os.path.join(GBOTPATH,"planning.txt", "w")) as fichier:
                 fichier.write(planning)
-        with open("streamer.txt", "w") as fichier2:
+        with open(os.path.join(GBOTPATH,"streamer.txt", "w")) as fichier2:
                 fichier2.write(streamer)                
         if streamer == "vide" :
-            with open("chatters.txt", "w") as fichier3:
+            with open(os.path.join(GBOTPATH,"chatters.txt", "w")) as fichier3:
                 fichier3.write("vide")          
         return 
 
@@ -335,19 +338,19 @@ class GBot(commands.Bot):
  
         # Commande !lurk
         if message.content.startswith("!lurk"):            
-            fichierLocal = open("chatters.txt","r")
+            fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt","r"))
             chatters = fichierLocal.read()
             fichierLocal.close
             await message.channel.send("`"+chatters+"`")
             
         if message.content.startswith("!planning"): 
-            fichierLocal = open("planning.txt","r")
+            fichierLocal = open(os.path.join(GBOTPATH,"planning.txt","r"))
             planning = fichierLocal.read()
             fichierLocal.close
             await message.channel.send("`"+planning+"`")
 
         if message.content.startswith("!streamer"): 
-            fichierLocal = open("streamer.txt","r")
+            fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt","r"))
             streamer = fichierLocal.read()
             fichierLocal.close
             if streamer != "vide" :
