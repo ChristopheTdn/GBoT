@@ -62,8 +62,10 @@ class GBot(commands.Bot):
         curseur.execute('''CREATE TABLE IF NOT EXISTS Spartiate(
             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
             pseudo TEXT UNIQUE,
-            score INTEGER
+            score INTEGER,
+            total INTEGER
             )''')
+        #curseur.execute('''ALTER TABLE IF NOT EXISTS Spartiate ADD COLUMN total INTEGER''')
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("00h00 - 01h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("01h00 - 02h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("02h00 - 03h00 :"," "))
@@ -88,7 +90,7 @@ class GBot(commands.Bot):
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("21h00 - 22h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("22h00 - 23h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("23h00 - 00h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score) VALUES (?,?)''', ("none",0))
+        curseur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', ("none",0,0))
         self.connexionSQL.commit()
         self.connexionSQL.close()
 
@@ -163,24 +165,32 @@ class GBot(commands.Bot):
                         for spartiate in rows :
                             if spartiate[1] == chatter :
                                 score = spartiate[2] + 1
+                                if spartiate[3] != None :
+                                    scoreTotal = spartiate[3] + 1
+                                else:
+                                    scoreTotal = score
                                 flagTrouve = True
-                                cur.execute("UPDATE Spartiate SET score = "+str(score)+" WHERE pseudo  = '"+chatter+"'")
+                                cur.execute("UPDATE Spartiate SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
+                                
                             if flagTrouve == False :
-                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score) VALUES (?,?)''', (chatter,1))  
+                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
                 reponse2 =""                
                 if datetime.now().hour < 1: 
                     # Recupere les scores pour les afficher une derniere fois
-                    cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
+                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY score DESC, pseudo ASC")
                     rows = cur.fetchall()
-                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__\n'
+                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__\n\
+                        *> score total entre parenthese*\n'
                     for data in rows :
-                        (spartiate,score) = data
-                        reponse2 += "`"+spartiate+"`" + " : "+ str(score) +"\n"
+                        (spartiate,score,scoreTotal) = data
+                        if scoreTotal == None :
+                            scoreTotal=score
+                        reponse2 += "`"+spartiate+"`" + " : "+ str(score) +"("+ str(scoreTotal) +")\n"
                     # Remet les score a 0
-                    cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
+                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                     rows = cur.fetchall()
                     for data in rows :
-                        (spartiate,score) = data
+                        (spartiate,score,total) = data
                         cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
                 self.connexionSQL.commit()
                 self.connexionSQL.close()    
