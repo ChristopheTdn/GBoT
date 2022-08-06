@@ -102,15 +102,11 @@ class GBot(commands.Bot):
         self.bg_task_RecupereSpartiate = self.loop.create_task(self.enregistreSpartiate())
         self.bg_task_RecuperePlanning = self.loop.create_task(self.enregistrePlanning())
         self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage())
-        
-        timer = RepeatTimer(4*60, SessionSpartiate)
-        timer.start()
+        self.bg_task_EcrisPresence = self.loop.create_task(self.appelSessionSpartiate())
 
         await self.wait_until_ready()
         
         print (RED + "> "+CYAN+"GBoT Process correctement initialisé.")
-        
-        SessionSpartiate()
         
 
     def AfficheMenu(self):
@@ -120,8 +116,12 @@ class GBot(commands.Bot):
         print ("  "+YELLOW+"[F2]"+WHITE + " Ouvre DATA Dir",end='')
         print ("  "+YELLOW+"[F5]"+WHITE + " Refresh manuel")
         '''
-
-
+    async def appelSessionSpartiate(self):
+        await self.wait_until_ready()
+        while not self.is_closed():
+            await SessionSpartiate()
+            await asyncio.sleep(240)
+            
     async def envoisMessage(self):
         await self.wait_until_ready()
         while not self.is_closed():
