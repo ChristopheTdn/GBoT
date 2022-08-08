@@ -23,7 +23,7 @@ from repeattimer import RepeatTimer
 from sessionspartiate import SessionSpartiate
 
 # Parametres 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(message)s", filemode="w")
 
 
