@@ -128,7 +128,7 @@ class SessionSpartiate:
             
             print (WHITE,"\nSpartiate(s) deconnecté(s) durant le créneau : ",end="")
             for spartiate in spartiateHoraire:
-                if spartiate != 'vide':
+                if spartiate != 'vide' and spartiate != streamer :
                     print (YELLOW,spartiate+" ",end="")
                     listeSpartiateFinale.append(spartiate)
             print("\n")
