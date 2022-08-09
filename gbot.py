@@ -119,8 +119,8 @@ class GBot(commands.Bot):
     async def appelSessionSpartiate(self):
         await self.wait_until_ready()
         while not self.is_closed():
-            await SessionSpartiate()
-            await asyncio.sleep(120)
+            SessionSpartiate()
+            await asyncio.sleep(240)
             
     async def envoisMessage(self):
         await self.wait_until_ready()
