@@ -127,7 +127,7 @@ class GBot(commands.Bot):
         while not self.is_closed():
             # minute 1    
             #Envois message horaire Streamer en ligne Spartiate  
-            if (datetime.now().hour < 1 or datetime.now().hour >=13) and datetime.now().minute == 32 : 
+            if (datetime.now().hour < 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
                 fichierLocal2 = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
                 streamer = fichierLocal2.read()
                 fichierLocal2.close
