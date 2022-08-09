@@ -102,7 +102,7 @@ class GBot(commands.Bot):
         self.bg_task_RecupereSpartiate = self.loop.create_task(self.enregistreSpartiate())
         self.bg_task_RecuperePlanning = self.loop.create_task(self.enregistrePlanning())
         self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage())
-        self.bg_task_EcrisPresence = self.loop.create_task(self.appelSessionSpartiate())
+        self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate())
 
         await self.wait_until_ready()
         
@@ -120,7 +120,7 @@ class GBot(commands.Bot):
         await self.wait_until_ready()
         while not self.is_closed():
             await SessionSpartiate()
-            await asyncio.sleep(240)
+            await asyncio.sleep(120)
             
     async def envoisMessage(self):
         await self.wait_until_ready()
