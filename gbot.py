@@ -125,19 +125,18 @@ class GBot(commands.Bot):
     async def envoisMessage(self):
         await self.wait_until_ready()
         while not self.is_closed():
-            
             # minute 1    
             #Envois message horaire Streamer en ligne Spartiate  
-            if (datetime.now().hour < 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
+            if (datetime.now().hour < 1 or datetime.now().hour >=13) and datetime.now().minute == 32 : 
                 fichierLocal2 = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
                 streamer = fichierLocal2.read()
                 fichierLocal2.close
-                if streamer != "vide" :
-                    idChannel = 979853240642437171
-                    channel = self.get_channel(idChannel)
-                    messages = await channel.history(limit=10).flatten()
-                    for message in messages :
-                        await message.delete()
+                idChannel = 979853240642437171
+                channel = self.get_channel(idChannel)
+                messages = await channel.history(limit=10).flatten()
+                for message in messages :
+                    await message.delete()
+                if streamer != "" :
                     reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
                     await channel.send("Donnez de la force à "+reponse)
                     
