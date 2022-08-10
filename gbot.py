@@ -176,7 +176,7 @@ class GBot(commands.Bot):
                 reponse2 =""                
                 if datetime.now().hour < 1: 
                     # Recupere les scores pour les afficher une derniere fois
-                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY score DESC, pseudo ASC")
+                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
                     rows = cur.fetchall()
                     reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__\n\
                         *> score total entre parenthese*\n'
@@ -184,7 +184,7 @@ class GBot(commands.Bot):
                         (spartiate,score,scoreTotal) = data
                         if scoreTotal == None :
                             scoreTotal=score
-                        reponse2 += "`"+spartiate+"`" + " : "+ str(score) +"("+ str(scoreTotal) +")\n"
+                        reponse2 += "`"+spartiate+"`" + " : "+ str(score) +" ("+ str(scoreTotal) +")\n"
                     # Remet les score a 0
                     cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                     rows = cur.fetchall()
@@ -401,12 +401,12 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
             if (datetime.now().hour< 1 or datetime.now().hour >=13) : 
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
                 cur = self.connexionSQL.cursor()
-                cur.execute("SELECT pseudo,score FROM 'Spartiate' WHERE score>0 ORDER BY score DESC, pseudo ASC")
+                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
                 rows = cur.fetchall()
-                sortieFlux =':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n'
+                sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée / Total de la semaine)*\n'
                 for data in rows :
-                    (spartiate,score) = data
-                    sortieFlux += "`"+spartiate+"`" + " : "+ str(score) +"\n"
+                    (spartiate,score,scoreTotal) = data
+                    sortieFlux += "`"+spartiate+"`" + " : **"+ str(score) +"** / "+ str(scoreTotal) +"\n"
             else :
                 sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n Absence de resultat en dehors des creneaux horaires de stream.'         
             await message.channel.send(sortieFlux)
@@ -427,9 +427,6 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 
         print (message.author,":",message.content)
 
-        
-    
-            
 if __name__ == "__main__":
     
     load_dotenv(dotenv_path=os.path.join(GBOTPATH,"config"))
