@@ -178,13 +178,12 @@ class GBot(commands.Bot):
                     # Recupere les scores pour les afficher une derniere fois
                     cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
                     rows = cur.fetchall()
-                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__\n\
-                        *> score total entre parenthese*\n'
+                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée / Total de la semaine)*\n'
                     for data in rows :
                         (spartiate,score,scoreTotal) = data
                         if scoreTotal == None :
                             scoreTotal=score
-                        reponse2 += "`"+spartiate+"`" + " : "+ str(score) +" ("+ str(scoreTotal) +")\n"
+                        reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** / "+ str(scoreTotal) +"\n"
                     # Remet les score a 0
                     cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                     rows = cur.fetchall()
@@ -214,9 +213,9 @@ class GBot(commands.Bot):
         elif jour==2 : # Mercredi
             channelID = 1000820314432868534
         elif jour==3 : # Jeudi
-            channelID = 1000820402106421308
+            channelID = 1005910080031559680 
         elif jour==4 : # Vendredi
-            channelID = 1000820495605825536
+            channelID = 1005912896011784275
         return channelID
 
     async def enregistreSpartiate(self):
