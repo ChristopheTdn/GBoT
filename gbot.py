@@ -407,10 +407,11 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                 sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__ \n                 *(Score journée --> Cumul sur la semaine)*\n\n'
                 for data in rows :
                     (spartiate,score,scoreTotal) = data
-                    sortieFlux += "   • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+                    sortieFlux += " • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(cumul)* \n"
                 sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
             else :
-                sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n Absence de resultat en dehors des creneaux horaires de stream.'         
+                sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n Absence de resultat en dehors des creneaux horaires de stream.'
+            print ('Message !score > Longueur ', RED , str(len(sortieFlux)) , WHITE)
             await message.channel.send(sortieFlux)
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
