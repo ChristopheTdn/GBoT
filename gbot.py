@@ -186,6 +186,7 @@ class GBot(commands.Bot):
                         reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
                     reponse2 += "\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n"
                     
+                    
                     # Remet les score a 0
                     cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                     rows = cur.fetchall()
@@ -196,8 +197,15 @@ class GBot(commands.Bot):
                 self.connexionSQL.close()    
                         
                 await channel.send(reponse)
-                if reponse2 != "": 
-                    await channel.send(reponse2)
+                if reponse2 != "":
+                    if len(reponse2)>1900 :
+                        messageTotal= reponse2
+                        s1 = slice(0,len(messageTotal)//2)
+                        s2 = slice(len(messageTotal)//2, len(messageTotal))
+                        await channel.send(messageTotal[s1])
+                        await channel.send(messageTotal[s2])
+                    else :
+                        await channel.send(reponse2)
                 
             await asyncio.sleep(60)
 
@@ -411,8 +419,17 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                 sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
             else :
                 sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n Absence de resultat en dehors des creneaux horaires de stream.'
+
             print ('Message !score > Longueur ', RED , str(len(sortieFlux)) , WHITE)
-            await message.channel.send(sortieFlux)
+            if len(sortieFlux)>1900 :
+                messageTotal= sortieFlux
+                print (len(messageTotal))
+                s1 = slice(0,len(messageTotal)//2)
+                s2 = slice(len(messageTotal)//2, len(messageTotal))
+                await message.channel.send(messageTotal[s1])
+                await message.channel.send(messageTotal[s2])
+            else : 
+                await message.channel.send(sortieFlux)
             
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
             await message.channel.send("**Commande GBoT :**\n\
