@@ -178,12 +178,14 @@ class GBot(commands.Bot):
                     # Recupere les scores pour les afficher une derniere fois
                     cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
                     rows = cur.fetchall()
-                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée / Total de la semaine)*\n'
+                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n'
                     for data in rows :
                         (spartiate,score,scoreTotal) = data
                         if scoreTotal == None :
                             scoreTotal=score
-                        reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** / "+ str(scoreTotal) +"\n"
+                        reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+                    reponse2 += "\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n"
+                    
                     # Remet les score a 0
                     cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                     rows = cur.fetchall()
@@ -402,10 +404,11 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                 cur = self.connexionSQL.cursor()
                 cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
                 rows = cur.fetchall()
-                sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée / Total de la semaine)*\n'
+                sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__ \n                 *(Score journée --> Cumul sur la semaine)*\n\n'
                 for data in rows :
                     (spartiate,score,scoreTotal) = data
-                    sortieFlux += "`"+spartiate+"`" + " : **"+ str(score) +"** / "+ str(scoreTotal) +"\n"
+                    sortieFlux += "   • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+                sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
             else :
                 sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n Absence de resultat en dehors des creneaux horaires de stream.'         
             await message.channel.send(sortieFlux)
