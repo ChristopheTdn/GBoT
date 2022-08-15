@@ -24,10 +24,8 @@ from repeattimer import RepeatTimer
 from sessionspartiate import SessionSpartiate
 
 # Parametres 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s %(message)s", filemode="w")
-
-
+logging.basicConfig(level=logging.ERROR,
+                    format="%(asctime)s %(message)s", filename='debug.log',filemode="w")
 
 # Constantes
 
@@ -126,7 +124,7 @@ class GBot(commands.Bot):
         await self.wait_until_ready()
         while not self.is_closed():
             SessionSpartiate()
-            print('attente retour')
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': fin session Spartiate')
             await asyncio.sleep(timing1)
             
     async def envoisMessage(self,timing2):
@@ -349,7 +347,7 @@ class GBot(commands.Bot):
                         "22h00 - 23h00 :",
                         "23h00 - 00h00 :"]
         listeCreneauNuit=["00h00 - 01h00 :"]
-                   
+
         for creneau in rows :
             if creneau[1] in listeCreneauJour :
                 planning += creneau[1]+" "+creneau[2]+"\n"
