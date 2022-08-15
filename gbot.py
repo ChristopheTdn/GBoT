@@ -1,3 +1,4 @@
+from pickle import GLOBAL
 import discord
 from discord.ext import commands,tasks
 from discord.utils import get
@@ -27,7 +28,9 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(message)s", filemode="w")
 
 
+
 # Constantes
+
 
 BLACK = Fore.BLACK
 RED = Fore.LIGHTRED_EX
@@ -42,8 +45,11 @@ BBLACK = Back.BLACK
 BYELLOW = Back.LIGHTYELLOW_EX
 BBLUE = Back.BLUE
 
+# Gestion Config
 GBOTPATH, filename = os.path.split(__file__)
-
+load_dotenv(dotenv_path=os.path.join(GBOTPATH,"config"))
+DEBUG = os.getenv("DEBUG")
+TOKEN = os.getenv("TOKEN")
 class GBot(commands.Bot):
 
     def __init__(self, *args, **kwargs):
@@ -99,10 +105,10 @@ class GBot(commands.Bot):
     async def on_ready(self):
 
         self.AfficheMenu()
-        self.bg_task_RecupereSpartiate = self.loop.create_task(self.enregistreSpartiate())
-        self.bg_task_RecuperePlanning = self.loop.create_task(self.enregistrePlanning())
-        self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage())
-        self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate())
+        self.bg_task_RecupereSpartiate = self.loop.create_task(self.enregistreSpartiate(60))
+        self.bg_task_RecuperePlanning = self.loop.create_task(self.enregistrePlanning(60))
+        self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage(60))
+        self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(240))
 
         await self.wait_until_ready()
         
@@ -116,13 +122,13 @@ class GBot(commands.Bot):
         print ("  "+YELLOW+"[F2]"+WHITE + " Ouvre DATA Dir",end='')
         print ("  "+YELLOW+"[F5]"+WHITE + " Refresh manuel")
         '''
-    async def appelSessionSpartiate(self):
+    async def appelSessionSpartiate(self,timing1):
         await self.wait_until_ready()
         while not self.is_closed():
-            SessionSpartiate()
-            await asyncio.sleep(240)
+            await SessionSpartiate()
+            await asyncio.sleep(timing1)
             
-    async def envoisMessage(self):
+    async def envoisMessage(self,timing2):
         await self.wait_until_ready()
         while not self.is_closed():
             # minute 1    
@@ -207,7 +213,7 @@ class GBot(commands.Bot):
                     else :
                         await channel.send(reponse2)
                 
-            await asyncio.sleep(60)
+            await asyncio.sleep(timing2)
 
     def recupereIDChannelPresence(self):
         channelID = 0
@@ -226,16 +232,20 @@ class GBot(commands.Bot):
             channelID = 1005910080031559680 
         elif jour==4 : # Vendredi
             channelID = 1005912896011784275
+        
+        if DEBUG=="True" : 
+            channelID = 1005912896011784275
+            
         return channelID
 
-    async def enregistreSpartiate(self):
+    async def enregistreSpartiate(self,timing3):
         await self.wait_until_ready()
         while not self.is_closed():
             members = self.get_all_members()
             with open(os.path.join(GBOTPATH,"spartiates.txt"), "w") as fichier:
                 for member in members:
                     fichier.write(member.display_name.lower()+"\n")
-            await asyncio.sleep(30) 
+            await asyncio.sleep(timing3) 
 
     def recupereIDChannelPlanning(self):
         '''
@@ -256,10 +266,14 @@ class GBot(commands.Bot):
         elif jour==3 : # Jeudi
             channelID = 979855851340857414
         elif jour==4 : # Vendredi
-            channelID = 979856098855120916
+            channelID = 979856098855120916 
+            
+        if DEBUG=="True" : 
+            channelID = 979856098855120916 
+            
         return channelID
 
-    async def enregistrePlanning(self):
+    async def enregistrePlanning(self,timing4):
         await self.wait_until_ready()
         while not self.is_closed():
             _channelID = self.recupereIDChannelPlanning()
@@ -306,7 +320,7 @@ class GBot(commands.Bot):
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
             self.sauvePlanning()   
-            await asyncio.sleep(60)   
+            await asyncio.sleep(timing4)   
 
     def DetermineCreneau(self):
             
@@ -449,9 +463,8 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 
 if __name__ == "__main__":
     
-    load_dotenv(dotenv_path=os.path.join(GBOTPATH,"config"))
     bot = GBot()
-    bot.run(os.getenv("TOKEN"))
+    bot.run(TOKEN)
     
 
 
