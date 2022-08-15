@@ -36,7 +36,7 @@ class SessionSpartiate:
                     _listeSpartiateDejaPresent = self.ObtenirSpartiateDejaPresent(_creneauHoraire)
                     self.ListeChatterEnLigne(_streamer.lower(), _creneauHoraire,_listeSpartiateDejaPresent)
                 else :
-                    print("Pas de session spartiate valide")
+                    print("Absence de streamer dans streamer.txt > Pas de session spartiate valide")
             else :
                 print(BYELLOW+BLACK+"Hors créneau :"+BBLACK+WHITE+"Il est "+RED+datetime.now().strftime("%Hh%M") +WHITE+" Les créneaux horaires ne sont pas atteint. patientez...")
 
