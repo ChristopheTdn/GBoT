@@ -148,13 +148,14 @@ class GBot(commands.Bot):
             # minute 58
             #Envois message horaire presence Spartiate
             if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 58 :
-                idChannel = self.recupereIDChannelPresence()
+
                 fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt"),"r")
                 chatters = fichierLocal.read()
                 fichierLocal.close
                 
+                idChannel = self.recupereIDChannelPresence()                
                 channel = self.get_channel(idChannel) 
-
+                
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
                 cur = self.connexionSQL.cursor()
                 cur.execute("SELECT * FROM 'Spartiate'")
@@ -224,11 +225,11 @@ class GBot(commands.Bot):
         if jour==0 : # Lundi
             channelID = 1000820139480055938
         elif jour==1 : # Mardi
-            channelID = 1000820225589116938
+            channelID = 1008377391690817546
         elif jour==2 : # Mercredi
-            channelID = 1000820314432868534
+            channelID = 1008377475832750151
         elif jour==3 : # Jeudi
-            channelID = 1005910080031559680 
+            channelID = 1008377565708292116
         elif jour==4 : # Vendredi
             channelID = 1005912896011784275
         
@@ -261,7 +262,7 @@ class GBot(commands.Bot):
         elif jour==1 : # Mardi
             channelID = 979855690879361035
         elif jour==2 : # Mercredi
-            channelID = 979855775193264128
+            channelID = 979855775193264128 
         elif jour==3 : # Jeudi
             channelID = 979855851340857414
         elif jour==4 : # Vendredi
