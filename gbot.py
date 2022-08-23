@@ -54,6 +54,8 @@ class GBot(commands.Bot):
         intents = discord.Intents.default()
         intents.messages = True
         intents.members = True
+        intents.message_content = True
+        
         super().__init__(command_prefix="!",intents = intents)
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         curseur = self.connexionSQL.cursor()
@@ -132,7 +134,7 @@ class GBot(commands.Bot):
         while not self.is_closed():
             # minute 1    
             #Envois message horaire Streamer en ligne Spartiate  
-            if (datetime.now().hour < 1 or datetime.now().hour >=13) and datetime.now().minute == 1 : 
+            if datetime.now().minute == 1 : 
                 fichierLocal2 = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
                 streamer = fichierLocal2.read()
                 fichierLocal2.close
@@ -141,9 +143,12 @@ class GBot(commands.Bot):
                 messages = await channel.history(limit=10).flatten()
                 for message in messages :
                     await message.delete()
-                if streamer != "" :
+                if streamer != "" and streamer != "vide":
                     reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
                     await channel.send("Donnez de la force à "+reponse)
+                else :
+                    reponse = "**`Il n y a pas de Raid Spartiate Actuellement**"
+                    await channel.send(reponse)
                     
             # minute 58
             #Envois message horaire presence Spartiate
@@ -279,7 +284,7 @@ class GBot(commands.Bot):
             _channelID = self.recupereIDChannelPlanning()
             if (_channelID != 0) :
                 channel = self.get_channel(_channelID)
-                message = await channel.history(limit=1,oldest_first=True).flatten()
+                message =  await channel.history(limit=1,oldest_first=True).flatten()
                 messageTotal = message[0].content
                 ligneMessage = messageTotal.split("\n")
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
@@ -371,8 +376,7 @@ class GBot(commands.Bot):
         return 
 
     async def on_message(self, message):
-           
- 
+
         # Commande !lurk
         if message.content.startswith("!lurk"):            
             fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt"),"r")
@@ -390,7 +394,7 @@ class GBot(commands.Bot):
             fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
             streamer = fichierLocal.read()
             fichierLocal.close
-            if streamer != "vide" :
+            if streamer != "vide" and streamer != "" :
                 reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
             else:
                 reponse = "**`"+streamer+"`**"
@@ -421,18 +425,16 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 \nAllez n'attend pas plus longtemps et deviens toi aussi un Spartiate en rejoignant ce serveur ici : https://discord.gg/SzDnhgEWrn )\n")
             
         if message.content.startswith("!score"):
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) : 
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
-                cur = self.connexionSQL.cursor()
-                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
-                rows = cur.fetchall()
-                sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__ \n                 *(Score journée --> Cumul sur la semaine)*\n\n'
-                for data in rows :
-                    (spartiate,score,scoreTotal) = data
-                    sortieFlux += " • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(cumul)* \n"
-                sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
-            else :
-                sortieFlux = ':medal: __**Score des SPARTIATES présents sur la journée :**__:medal:\n Absence de resultat en dehors des creneaux horaires de stream.'
+
+            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
+            cur = self.connexionSQL.cursor()
+            cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+            rows = cur.fetchall()
+            sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__ \n                 *(Score journée --> Cumul sur la semaine)*\n\n'
+            for data in rows :
+                (spartiate,score,scoreTotal) = data
+                sortieFlux += " • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(cumul)* \n"
+            sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
 
             print ('Message !score > Longueur ', RED , str(len(sortieFlux)) , WHITE)
             if len(sortieFlux)>1900 :
@@ -463,11 +465,6 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 
 if __name__ == "__main__":
     
+    
     bot = GBot()
     bot.run(TOKEN)
-    
-
-
-
-
-
