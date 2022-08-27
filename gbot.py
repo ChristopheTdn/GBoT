@@ -1,4 +1,4 @@
-from pickle import GLOBAL
+
 import discord
 from discord.ext import commands,tasks
 from discord.utils import get
@@ -6,29 +6,23 @@ from discord.utils import get
 import os
 import logging
 from datetime import datetime,timedelta
-import time
-
+from sessionspartiate import SessionSpartiate
 
 from colorama import init, Fore, Back
 from dotenv import load_dotenv
-
+import re 
 import asyncio
 import sqlite3
 
-import re
-
-
-# Class specific GBot
-
-from repeattimer import RepeatTimer
-from sessionspartiate import SessionSpartiate
+description = '''An example bot to showcase the discord.ext.commands extension
+module.
+There are a number of utility commands being showcased here.'''
 
 # Parametres 
 logging.basicConfig(level=logging.ERROR,
                     format="%(asctime)s %(message)s", filename='debug.log',filemode="w")
 
 # Constantes
-
 
 BLACK = Fore.BLACK
 RED = Fore.LIGHTRED_EX
@@ -48,245 +42,51 @@ GBOTPATH, filename = os.path.split(__file__)
 load_dotenv(dotenv_path=os.path.join(GBOTPATH,"config"))
 DEBUG = os.getenv("DEBUG")
 TOKEN = os.getenv("TOKEN")
-class GBot(commands.Bot):
-
+    
+    
+class GBoT(discord.Client):
+    
     def __init__(self, *args, **kwargs):
-        intents = discord.Intents.default()
-        intents.messages = True
-        intents.members = True
-        #intents.message_content = True
+        super().__init__(*args, **kwargs)
+        # Initialise Table SQL
+        self.initTableSql() 
         
-        super().__init__(command_prefix="!",intents = intents)
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-        curseur = self.connexionSQL.cursor()
-        curseur.execute('''CREATE TABLE IF NOT EXISTS GBoT(
-            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-            planning TEXT,
-            streamer TEXT,
-            UNIQUE(planning)
-            )''')
-        curseur.execute('''CREATE TABLE IF NOT EXISTS Spartiate(
-            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-            pseudo TEXT UNIQUE,
-            score INTEGER,
-            total INTEGER
-            )''')
-        #curseur.execute('''ALTER TABLE IF NOT EXISTS Spartiate ADD COLUMN total INTEGER''')
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("00h00 - 01h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("01h00 - 02h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("02h00 - 03h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("03h00 - 04h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("04h00 - 05h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("05h00 - 06h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("06h00 - 07h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("07h00 - 08h00 :"," "))        
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("08h00 - 09h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("09h00 - 10h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("10h00 - 11h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("11h00 - 12h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("12h00 - 13h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("13h00 - 14h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("14h00 - 15h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("15h00 - 16h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("16h00 - 17h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("17h00 - 18h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("18h00 - 19h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("19h00 - 20h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("20h00 - 21h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("21h00 - 22h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("22h00 - 23h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("23h00 - 00h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', ("none",0,0))
-        self.connexionSQL.commit()
-        self.connexionSQL.close()
-
-
-            
-    async def on_ready(self):
-
-        self.AfficheMenu()
-        self.bg_task_RecupereSpartiate = self.loop.create_task(self.enregistreSpartiate(60))
-        self.bg_task_RecuperePlanning = self.loop.create_task(self.enregistrePlanning(60))
-        self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage(60))
+    async def setup_hook(self) -> None:
+        # create the background task and run it in the background
+        self.bg_task_EnregistreSpartiate = self.loop.create_task(self.enregistreSpartiate(60))
+        self.bg_task_EnregistrePlanning = self.loop.create_task(self.enregistrePlanning(60))
         self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(120))
+        self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage(60))
 
-        await self.wait_until_ready()
-        
-        print (RED + "> "+CYAN+"GBoT Process correctement initialisé.")
-        
+    async def on_ready(self):
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        print('------')
 
-    def AfficheMenu(self):
-        print("\n",BBLACK,"                         "+BBLUE+YELLOW+ "SPARTAN VIEWERSPY"+BBLACK+"\n")
-        '''
-        print ("  "+YELLOW+"[F1]"+WHITE + " : Affiche Planning.txt",end='')
-        print ("  "+YELLOW+"[F2]"+WHITE + " Ouvre DATA Dir",end='')
-        print ("  "+YELLOW+"[F5]"+WHITE + " Refresh manuel")
-        '''
-    async def appelSessionSpartiate(self,timing1):
+    async def appelSessionSpartiate(self,timingAppelSessionSpartiate):
         await self.wait_until_ready()
         while not self.is_closed():
             SessionSpartiate()
-            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': fin session Spartiate')
-            await asyncio.sleep(timing1)
-            
-    async def envoisMessage(self,timing2):
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate appelée')
+            await asyncio.sleep(timingAppelSessionSpartiate)
+
+    async def enregistreSpartiate(self,timingEnregistreSpartiate):
         await self.wait_until_ready()
         while not self.is_closed():
-            # minute 1    
-            #Envois message horaire Streamer en ligne Spartiate  
-            if datetime.now().minute == 1 : 
-                fichierLocal2 = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
-                streamer = fichierLocal2.read()
-                fichierLocal2.close
-                idChannel = 979853240642437171
-                channel = self.get_channel(idChannel)
-                messages = await channel.history(limit=10).flatten()
-                for message in messages :
-                    await message.delete()
-                if streamer != "" and streamer != "vide":
-                    reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
-                    await channel.send("Donnez de la force à "+reponse)
-                else :
-                    reponse = "**`Il n y a pas de Raid Spartiate Actuellement**"
-                    await channel.send(reponse)
-                    
-            # minute 58
-            #Envois message horaire presence Spartiate
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 58 :
-
-                fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt"),"r")
-                chatters = fichierLocal.read()
-                fichierLocal.close
-                
-                idChannel = self.recupereIDChannelPresence()                
-                channel = self.get_channel(idChannel) 
-                
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-                cur = self.connexionSQL.cursor()
-                cur.execute("SELECT * FROM 'Spartiate'")
-                rows = cur.fetchall()                
-                chatters = chatters.split("\n") 
-                reponse =  "**"+chatters[0]+"**\n"              
-                del chatters[0]
-                for chatter in chatters:
-                    if chatter !="" :
-                        reponse += "`"+chatter+"`\n"
-                        flagTrouve = False
-                        for spartiate in rows :
-                            if spartiate[1] == chatter :
-                                score = spartiate[2] + 1
-                                if spartiate[3] != None :
-                                    scoreTotal = spartiate[3] + 1
-                                else:
-                                    scoreTotal = score
-                                flagTrouve = True
-                                cur.execute("UPDATE Spartiate SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
-                                
-                            if flagTrouve == False :
-                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
-                reponse2 =""                
-                if datetime.now().hour < 1: 
-                    # Recupere les scores pour les afficher une derniere fois
-                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
-                    rows = cur.fetchall()
-                    reponse2 +=':medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n'
-                    for data in rows :
-                        (spartiate,score,scoreTotal) = data
-                        if scoreTotal == None :
-                            scoreTotal=score
-                        reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
-                    reponse2 += "\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n"
-                    
-                    
-                    # Remet les score a 0
-                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
-                    rows = cur.fetchall()
-                    for data in rows :
-                        (spartiate,score,total) = data
-                        cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
-                self.connexionSQL.commit()
-                self.connexionSQL.close()    
-                        
-                await channel.send(reponse)
-                if reponse2 != "":
-                    if len(reponse2)>1900 :
-                        messageTotal= reponse2
-                        s1 = slice(0,len(messageTotal)//2)
-                        s2 = slice(len(messageTotal)//2, len(messageTotal))
-                        await channel.send(messageTotal[s1])
-                        await channel.send(messageTotal[s2])
-                    else :
-                        await channel.send(reponse2)
-                
-            await asyncio.sleep(timing2)
-
-    def recupereIDChannelPresence(self):
-        channelID = 0
-        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if (datetime.now().hour<2):
-            jour-=1  
-            if jour<0: jour=6
-            
-        if jour==0 : # Lundi
-            channelID = 1000820139480055938
-        elif jour==1 : # Mardi
-            channelID = 1008377391690817546
-        elif jour==2 : # Mercredi
-            channelID = 1008377475832750151
-        elif jour==3 : # Jeudi
-            channelID = 1008377565708292116
-        elif jour==4 : # Vendredi
-            channelID = 1005912896011784275
-        
-        if DEBUG=="True" : 
-            channelID = 1005912896011784275
-            
-        return channelID
-
-    async def enregistreSpartiate(self,timing3):
-        await self.wait_until_ready()
-        while not self.is_closed():
-            members = self.get_all_members()
             with open(os.path.join(GBOTPATH,"spartiates.txt"), "w") as fichier:
-                for member in members:
-                    fichier.write(member.display_name.lower()+"\n")
-            await asyncio.sleep(timing3) 
+                for member in self.get_all_members():
+                    if not member.bot :
+                        fichier.write(member.display_name.lower()+"\n")
+            await asyncio.sleep(timingEnregistreSpartiate) 
 
-    def recupereIDChannelPlanning(self):
-        '''
-        renvois l ID du channel en fonction de l heure  local
-        '''
-        channelID = 0
-        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if (datetime.now().hour<2):
-            jour-=1  
-            if jour<0: jour=6
-            
-        if jour==0 : # Lundi
-            channelID = 979855578144858163
-        elif jour==1 : # Mardi
-            channelID = 979855690879361035
-        elif jour==2 : # Mercredi
-            channelID = 979855775193264128 
-        elif jour==3 : # Jeudi
-            channelID = 979855851340857414
-        elif jour==4 : # Vendredi
-            channelID = 979856098855120916 
-            
-        if DEBUG=="True" : 
-            channelID = 979856098855120916 
-            
-        return channelID
-
-    async def enregistrePlanning(self,timing4):
+    async def enregistrePlanning(self,timingEnregistrePlanning):
         await self.wait_until_ready()
         while not self.is_closed():
             _channelID = self.recupereIDChannelPlanning()
             if (_channelID != 0) :
                 channel = self.get_channel(_channelID)
-                message =  await channel.history(limit=1,oldest_first=True).flatten()
-                messageTotal = message[0].content
-                ligneMessage = messageTotal.split("\n")
+                messages = [messageAEffacer async for messageAEffacer in channel.history(limit=1,oldest_first=True)]
+                message = messages[0].content
+                ligneMessage = message.split("\n")
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
                 curseur = self.connexionSQL.cursor()
                 for ligne in  ligneMessage :
@@ -325,14 +125,14 @@ class GBot(commands.Bot):
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
             self.sauvePlanning()   
-            await asyncio.sleep(timing4)   
-
+            await asyncio.sleep(timingEnregistrePlanning) 
+    
     def DetermineCreneau(self):
             
-            debut = datetime.now().strftime('%Hh00')
-            fin = (datetime.now()+timedelta(hours=1)).strftime('%Hh00')
-            return (debut + " - "+ fin +" :") 
-      
+        debut = datetime.now().strftime('%Hh00')
+        fin = (datetime.now()+timedelta(hours=1)).strftime('%Hh00')
+        return (debut + " - "+ fin +" :") 
+    
     def sauvePlanning(self):
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
         creneauActuel = self.DetermineCreneau()
@@ -365,7 +165,6 @@ class GBot(commands.Bot):
                 if creneau[1] == creneauActuel :
                     streamer = creneau[2]
 
-            
         with open(os.path.join(GBOTPATH,"planning.txt"), "w") as fichier:
                 fichier.write(planning)
         with open(os.path.join(GBOTPATH,"streamer.txt"), "w") as fichier2:
@@ -373,11 +172,172 @@ class GBot(commands.Bot):
         if streamer == "vide" :
             with open(os.path.join(GBOTPATH,"chatters.txt"), "w") as fichier3:
                 fichier3.write("vide")          
-        return 
+        return
+            
+    def recupereIDChannelPlanning(self):
+        '''
+        renvois l ID du channel en fonction de l heure  local
+        '''
+        channelID = 0
+        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
+        if (datetime.now().hour<2):
+            jour-=1  
+            if jour<0: jour=6
+            
+        if jour==0 : # Lundi
+            channelID = 979855578144858163
+        elif jour==1 : # Mardi
+            channelID = 979855690879361035
+        elif jour==2 : # Mercredi
+            channelID = 979855775193264128 
+        elif jour==3 : # Jeudi
+            channelID = 979855851340857414
+        elif jour==4 : # Vendredi
+            channelID = 979856098855120916 
+            
+        if DEBUG=="True" : 
+            channelID = 979856098855120916 
+            
+        return channelID
 
+    def recupereIDChannelPresence(self):
+        channelID = 0
+        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
+        if (datetime.now().hour<2):
+            jour-=1  
+            if jour<0: jour=6
+            
+        if jour==0 : # Lundi
+            channelID = 1000820139480055938
+        elif jour==1 : # Mardi
+            channelID = 1008377391690817546
+        elif jour==2 : # Mercredi
+            channelID = 1008377475832750151
+        elif jour==3 : # Jeudi
+            channelID = 1008377565708292116
+        elif jour==4 : # Vendredi
+            channelID = 1005912896011784275
+        
+        if DEBUG=="True" : 
+            channelID = 1005912896011784275
+            
+        return channelID
+
+    async def envoisMessage(self,timingEnvoisMessage):
+        await self.wait_until_ready()
+        while not self.is_closed():
+            # minute 1    
+            #Envois message horaire Streamer en ligne Spartiate  
+            if datetime.now().minute == 1 : 
+                fichierLocal2 = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
+                streamer = fichierLocal2.read()
+                fichierLocal2.close
+                idChannel = 979853240642437171
+                channel = self.get_channel(idChannel)
+                messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
+                for messageAEffacer in messages :
+                    await messageAEffacer.delete()
+
+                if streamer != "" and streamer != "vide":
+                    reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
+                    await channel.send("Donnez de la force à "+reponse)
+                else :
+                    reponse = "**`Il n y a pas de Raid Spartiate Actuellement**"
+                    await channel.send(reponse)
+                    
+            # minute 58
+            #Envois message horaire presence Spartiate
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 57 :
+
+                with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
+                    chatters = fichier.read()
+                
+                
+                idChannel = self.recupereIDChannelPresence()                
+                channel = self.get_channel(idChannel) 
+                
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+                cur = self.connexionSQL.cursor()
+                cur.execute("SELECT * FROM 'Spartiate'")
+                rows = cur.fetchall()                
+                chatters = chatters.split("\n") 
+                reponse =  "**"+chatters[0]+"**\n"              
+                del chatters[0]
+                for chatter in chatters:
+                    if chatter !="" :
+                        reponse += "`"+chatter+"`\n"
+                        flagTrouve = False
+                        for spartiate in rows :
+                            if spartiate[1] == chatter :
+                                score = spartiate[2] + 1
+                                if spartiate[3] != None :
+                                    scoreTotal = spartiate[3] + 1
+                                else:
+                                    scoreTotal = score
+                                flagTrouve = True
+                                cur.execute("UPDATE Spartiate SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
+                                
+                            if flagTrouve == False :
+                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
+
+                await channel.send(reponse)
+
+                reponse2 =""                
+                if datetime.now().hour < 1: 
+                    # Recupere les scores pour les afficher une derniere fois
+                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+                    rows = cur.fetchall()
+                    reponse2 +='\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n'
+                    for data in rows :
+                        (spartiate,score,scoreTotal) = data
+                        if scoreTotal == None :
+                            scoreTotal=score
+                        reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+                    reponse2 += "\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n"
+                    
+                    
+                    # Remet les score a 0
+                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
+                    rows = cur.fetchall()
+                    for data in rows :
+                        (spartiate,score,total) = data
+                        cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
+                self.connexionSQL.commit()
+                self.connexionSQL.close() 
+                
+                if reponse2 != "":
+                    if len(reponse2)>1900 :
+                        messageTotal= reponse2
+                        s1 = slice(0,len(messageTotal)//2)
+                        s2 = slice(len(messageTotal)//2, len(messageTotal))
+                        await channel.send(messageTotal[s1])
+                        await channel.send(messageTotal[s2])
+                    else :
+                        await channel.send(reponse2)
+                        
+                reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
+
+                if datetime.now().hour > 1 and datetime.now().weekday()==3 : 
+                    self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+                    cur = self.connexionSQL.cursor()
+                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>20 ORDER BY total DESC, pseudo ASC")
+                    rows = cur.fetchall()
+                    for data in rows :
+                        (spartiate,score,total) = data
+                        reponse3 += " •`"+spartiate+"`" + " : **"+ str(total)+"**\n"
+                        
+                    await channel.send(reponse3)   
+                    self.connexionSQL.close() 
+            await asyncio.sleep(timingEnvoisMessage)    
+    
+    
     async def on_message(self, message):
-
-        # Commande !lurk
+        if message.content.startswith(">efface"):
+            channel = self.get_channel(message.channel.id)
+            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
+            for messageAEffacer in messages :
+                    await messageAEffacer.delete()
+                # Commande !lurk
         if message.content.startswith("!lurk"):            
             fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt"),"r")
             chatters = fichierLocal.read()
@@ -463,8 +423,60 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 
         print (message.author,":",message.content)
 
+    def initTableSql(self):
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        curseur = self.connexionSQL.cursor()
+        curseur.execute('''CREATE TABLE IF NOT EXISTS GBoT(
+            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+            planning TEXT,
+            streamer TEXT,
+            UNIQUE(planning)
+            )''')
+        curseur.execute('''CREATE TABLE IF NOT EXISTS Spartiate(
+            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+            pseudo TEXT UNIQUE,
+            score INTEGER,
+            total INTEGER
+            )''')
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("00h00 - 01h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("01h00 - 02h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("02h00 - 03h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("03h00 - 04h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("04h00 - 05h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("05h00 - 06h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("06h00 - 07h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("07h00 - 08h00 :"," "))        
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("08h00 - 09h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("09h00 - 10h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("10h00 - 11h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("11h00 - 12h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("12h00 - 13h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("13h00 - 14h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("14h00 - 15h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("15h00 - 16h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("16h00 - 17h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("17h00 - 18h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("18h00 - 19h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("19h00 - 20h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("20h00 - 21h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("21h00 - 22h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("22h00 - 23h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("23h00 - 00h00 :"," "))
+        curseur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', ("none",0,0))
+        self.connexionSQL.commit()
+        self.connexionSQL.close()
+
 if __name__ == "__main__":
-    
-    
-    bot = GBot()
+
+
+    intents = discord.Intents.default()
+    intents.members = True
+    intents.message_content = True
+    intents.messages = True
+
+    bot = GBoT(command_prefix='?', description=description, intents=intents)
     bot.run(TOKEN)
+
+
+
+    
