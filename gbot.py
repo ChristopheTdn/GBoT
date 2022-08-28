@@ -148,7 +148,7 @@ class GBoT(discord.Client):
         '''
         channelID = 0
         jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if (datetime.now().hour<2):
+        if (datetime.now().hour<1):
             jour-=1  
             if jour<0: jour=6
             
@@ -171,9 +171,10 @@ class GBoT(discord.Client):
     def recupereIDChannelPresence(self):
         channelID = 0
         jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if (datetime.now().hour<2):
+        if (datetime.now().hour<1):
             jour-=1  
-            if jour<0: jour=6
+            if jour<0:
+                jour=6
             
         if jour==0 : # Lundi
             channelID = 1000820139480055938
