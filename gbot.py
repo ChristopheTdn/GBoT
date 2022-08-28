@@ -14,9 +14,8 @@ import re
 import asyncio
 import sqlite3
 
-description = '''An example bot to showcase the discord.ext.commands extension
-module.
-There are a number of utility commands being showcased here.'''
+description = '''Le GBoT pour le serveur des SPartiates .
+gere les streamers et leurs viewers en ajoutant quelques commandes sympas.'''
 
 # Parametres 
 logging.basicConfig(level=logging.ERROR,
@@ -229,9 +228,9 @@ class GBoT(discord.Client):
             # minute 1    
             #Envois message horaire Streamer en ligne Spartiate  
             if datetime.now().minute == 1 : 
-                fichierLocal2 = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
-                streamer = fichierLocal2.read()
-                fichierLocal2.close
+                with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
+                    streamer = fichier.read()
+
                 idChannel = 979853240642437171
                 channel = self.get_channel(idChannel)
                 messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
@@ -247,7 +246,7 @@ class GBoT(discord.Client):
                     
             # minute 58
             #Envois message horaire presence Spartiate
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 57 :
+            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 36 :
 
                 with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                     chatters = fichier.read()
@@ -281,10 +280,15 @@ class GBoT(discord.Client):
                                 cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
 
                 await channel.send(reponse)
-
-                reponse2 =""                
-                if datetime.now().hour < 1: 
+                self.connexionSQL.commit()
+                self.connexionSQL.close() 
+                
+                reponse2 =""  
+            
+                if datetime.now().hour > 1: 
                     # Recupere les scores pour les afficher une derniere fois
+                    self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+                    cur = self.connexionSQL.cursor()  
                     cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
                     rows = cur.fetchall()
                     reponse2 +='\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n'
@@ -302,8 +306,8 @@ class GBoT(discord.Client):
                     for data in rows :
                         (spartiate,score,total) = data
                         cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
-                self.connexionSQL.commit()
-                self.connexionSQL.close() 
+                    self.connexionSQL.commit()
+                    self.connexionSQL.close() 
                 
                 if reponse2 != "":
                     if len(reponse2)>1900 :
@@ -317,10 +321,10 @@ class GBoT(discord.Client):
                         
                 reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
 
-                if datetime.now().hour > 1 and datetime.now().weekday()==3 : 
+                if datetime.now().hour > 1 and datetime.now().weekday()==6 : 
                     self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
                     cur = self.connexionSQL.cursor()
-                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>20 ORDER BY total DESC, pseudo ASC")
+                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, pseudo ASC")
                     rows = cur.fetchall()
                     for data in rows :
                         (spartiate,score,total) = data
@@ -339,21 +343,18 @@ class GBoT(discord.Client):
                     await messageAEffacer.delete()
                 # Commande !lurk
         if message.content.startswith("!lurk"):            
-            fichierLocal = open(os.path.join(GBOTPATH,"chatters.txt"),"r")
-            chatters = fichierLocal.read()
-            fichierLocal.close
+            with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier :
+                chatters = fichier.read()
             await message.channel.send("`"+chatters+"`")
             
         if message.content.startswith("!planning"): 
-            fichierLocal = open(os.path.join(GBOTPATH,"planning.txt"),"r")
-            planning = fichierLocal.read()
-            fichierLocal.close
+            with open(os.path.join(GBOTPATH,"planning.txt"),"r") as fichier :
+                planning = fichier.read()
             await message.channel.send("`"+planning+"`")
 
         if message.content.startswith("!streamer"): 
-            fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
-            streamer = fichierLocal.read()
-            fichierLocal.close
+            with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
+                streamer = fichier.read()
             if streamer != "vide" and streamer != "" :
                 reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
             else:
@@ -385,7 +386,6 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 \nAllez n'attend pas plus longtemps et deviens toi aussi un Spartiate en rejoignant ce serveur ici : https://discord.gg/SzDnhgEWrn )\n")
             
         if message.content.startswith("!score"):
-
             self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
             cur = self.connexionSQL.cursor()
             cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
@@ -395,7 +395,6 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                 (spartiate,score,scoreTotal) = data
                 sortieFlux += " • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(cumul)* \n"
             sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
-
             print ('Message !score > Longueur ', RED , str(len(sortieFlux)) , WHITE)
             if len(sortieFlux)>1900 :
                 messageTotal= sortieFlux
