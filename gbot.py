@@ -52,80 +52,46 @@ class GBoT(discord.Client):
         
     async def setup_hook(self) -> None:
         # create the background task and run it in the background
-        self.bg_task_EnregistreSpartiate = self.loop.create_task(self.enregistreSpartiate(60))
-        self.bg_task_EnregistrePlanning = self.loop.create_task(self.enregistrePlanning(60))
-        self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(120))
-        self.bg_task_EcrisPresence = self.loop.create_task(self.envoisMessage(60))
+        self.bg_task_EnregistreSpartiate = self.loop.create_task(self.EnchaineProcedure(60))
+        #self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(120))
+
+    async def EnchaineProcedure(self, timing):
+        
+        await self.wait_until_ready()
+        while not self.is_closed():
+            
+            # ENREGISTRE SPARTIATE
+            self.enregistreSpartiate()
+            
+            # RECUPERE PLANNING               
+            await self.recuperePlanning()   
+                         
+            # SAUVEGARDE PLANNING SUIR DISQUE                
+            self.sauvePlanning() 
+                          
+            # ENVOIS MESSAGE 
+            await self.envoisMessage()  
+                               
+            # APPEL SESSION SPARTIATE
+            self.appelSessionSpartiate()
+                        
+            await asyncio.sleep(timing) 
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    async def appelSessionSpartiate(self,timingAppelSessionSpartiate):
-        await self.wait_until_ready()
-        while not self.is_closed():
-            SessionSpartiate()
-            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate appelée')
-            await asyncio.sleep(timingAppelSessionSpartiate)
+    def appelSessionSpartiate(self):
+        bob=SessionSpartiate()
+        print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate appelée')
 
-    async def enregistreSpartiate(self,timingEnregistreSpartiate):
-        await self.wait_until_ready()
-        while not self.is_closed():
-            with open(os.path.join(GBOTPATH,"spartiates.txt"), "w") as fichier:
-                for member in self.get_all_members():
-                    if not member.bot :
+
+    def enregistreSpartiate(self):
+        with open(os.path.join(GBOTPATH,"spartiates.txt"), "w") as fichier:
+            for member in self.get_all_members():
+                if not member.bot :
                         fichier.write(member.display_name.lower()+"\n")
-            await asyncio.sleep(timingEnregistreSpartiate) 
 
-    async def enregistrePlanning(self,timingEnregistrePlanning):
-        await self.wait_until_ready()
-        while not self.is_closed():
-            _channelID = self.recupereIDChannelPlanning()
-            if (_channelID != 0) :
-                channel = self.get_channel(_channelID)
-                messages = [messageAEffacer async for messageAEffacer in channel.history(limit=1,oldest_first=True)]
-                message = messages[0].content
-                ligneMessage = message.split("\n")
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
-                curseur = self.connexionSQL.cursor()
-                for ligne in  ligneMessage :
-                    ligne = re.sub(r' +', ' ', ligne)
-                    ligneCut = ligne.split(" ")
-                    
-                    nom_streamer = ""
-                    if len(ligneCut) > 4 :
-                        if ("<@" in ligneCut[4]) :
-                            identity =ligneCut[4].replace("<@","").replace(">","")
-                            user= get(self.get_all_members(),id=(int(identity)))                   
-                            ligneCut[4] = user.display_name
-                        nom_streamer = ligneCut[4] 
-
-                    curseur.execute("UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'")
-
-                self.connexionSQL.commit()
-                self.connexionSQL.close()
-            else:
-                listeCreneau=["13h00 - 14h00 :",
-                        "14h00 - 15h00 :",
-                        "15h00 - 16h00 :",
-                        "16h00 - 17h00 :",
-                        "17h00 - 18h00 :",
-                        "18h00 - 19h00 :",
-                        "19h00 - 20h00 :",
-                        "20h00 - 21h00 :",
-                        "21h00 - 22h00 :",                          
-                        "22h00 - 23h00 :",
-                        "23h00 - 00h00 :",
-                        "00h00 - 01h00 :"]
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-                curseur = self.connexionSQL.cursor()
-                for creneau in listeCreneau:
-                    curseur.execute("UPDATE GBoT SET streamer = 'vide' WHERE planning = '"+creneau+"'")
-                self.connexionSQL.commit()
-                self.connexionSQL.close()
-            self.sauvePlanning()   
-            await asyncio.sleep(timingEnregistrePlanning) 
-    
     def DetermineCreneau(self):
             
         debut = datetime.now().strftime('%Hh00')
@@ -163,6 +129,9 @@ class GBoT(discord.Client):
                 planning += creneau[1]+" "+creneau[2]+"\n"
                 if creneau[1] == creneauActuel :
                     streamer = creneau[2]
+
+        self.connexionSQL.commit()
+        self.connexionSQL.close()
 
         with open(os.path.join(GBOTPATH,"planning.txt"), "w") as fichier:
                 fichier.write(planning)
@@ -222,117 +191,165 @@ class GBoT(discord.Client):
             
         return channelID
 
-    async def envoisMessage(self,timingEnvoisMessage):
-        await self.wait_until_ready()
-        while not self.is_closed():
-            # minute 1    
-            #Envois message horaire Streamer en ligne Spartiate  
-            if datetime.now().minute == 1 : 
-                with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
-                    streamer = fichier.read()
+    async def recuperePlanning(self):
+        _channelID = self.recupereIDChannelPlanning()
+        if (_channelID != 0) :
+            channel = self.get_channel(_channelID)
+            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=1,oldest_first=True)]
+            message = messages[0].content
+            ligneMessage = message.split("\n")
+            
+            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
+            curseur = self.connexionSQL.cursor()
+            
+            for ligne in  ligneMessage :
+                ligne = re.sub(r' +', ' ', ligne)
+                ligneCut = ligne.split(" ")
+                
+                nom_streamer = ""
+                if len(ligneCut) > 4 :
+                    if ("<@" in ligneCut[4]) :
+                        identity =ligneCut[4].replace("<@","").replace(">","")
+                        user= get(self.get_all_members(),id=(int(identity)))                   
+                        ligneCut[4] = user.display_name
+                    nom_streamer = ligneCut[4] 
 
-                idChannel = 979853240642437171
-                channel = self.get_channel(idChannel)
-                messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
-                for messageAEffacer in messages :
-                    await messageAEffacer.delete()
+                curseur.execute("UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'")
 
-                if streamer != "" and streamer != "vide":
-                    reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
-                    await channel.send("Donnez de la force à "+reponse)
-                else :
-                    reponse = "**`Il n y a pas de Raid Spartiate Actuellement**"
-                    await channel.send(reponse)
+            self.connexionSQL.commit()
+            self.connexionSQL.close()
+            
+        else:
+            listeCreneau=["13h00 - 14h00 :",
+                    "14h00 - 15h00 :",
+                    "15h00 - 16h00 :",
+                    "16h00 - 17h00 :",
+                    "17h00 - 18h00 :",
+                    "18h00 - 19h00 :",
+                    "19h00 - 20h00 :",
+                    "20h00 - 21h00 :",
+                    "21h00 - 22h00 :",                          
+                    "22h00 - 23h00 :",
+                    "23h00 - 00h00 :",
+                    "00h00 - 01h00 :"]
+            self.connexionSQL =  sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+            curseur = self.connexionSQL.cursor()
+            for creneau in listeCreneau:
+                curseur.execute("UPDATE GBoT SET streamer = 'vide' WHERE planning = '"+creneau+"'")
+            self.connexionSQL.commit()
+            self.connexionSQL.close()
+               
+    async def envoisMessage(self):
+        # minute 1    
+        #Envois message horaire Streamer en ligne Spartiate  
+        if datetime.now().minute == 1 : 
+            with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
+                streamer = fichier.read()
+
+            idChannel = 979853240642437171
+            channel = self.get_channel(idChannel)
+            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
+            for messageAEffacer in messages :
+                await messageAEffacer.delete()
+
+            if streamer != "" and streamer != "vide":
+                reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
+                await channel.send("Donnez de la force à "+reponse)
+            else :
+                reponse = "**`Il n y a pas de Raid Spartiate Actuellement**"
+                await channel.send(reponse)
                     
             # minute 58
             #Envois message horaire presence Spartiate
-            if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 36 :
+        if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 27 :
 
-                with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
-                    chatters = fichier.read()
+            with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
+                chatters = fichier.read()
                 
                 
-                idChannel = self.recupereIDChannelPresence()                
-                channel = self.get_channel(idChannel) 
+            idChannel = self.recupereIDChannelPresence()                
+            channel = self.get_channel(idChannel) 
                 
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-                cur = self.connexionSQL.cursor()
-                cur.execute("SELECT * FROM 'Spartiate'")
-                rows = cur.fetchall()                
-                chatters = chatters.split("\n") 
-                reponse =  "**"+chatters[0]+"**\n"              
-                del chatters[0]
-                for chatter in chatters:
-                    if chatter !="" :
-                        reponse += "`"+chatter+"`\n"
-                        flagTrouve = False
-                        for spartiate in rows :
-                            if spartiate[1] == chatter :
-                                score = spartiate[2] + 1
-                                if spartiate[3] != None :
-                                    scoreTotal = spartiate[3] + 1
-                                else:
-                                    scoreTotal = score
-                                flagTrouve = True
-                                cur.execute("UPDATE Spartiate SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
+            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+            cur = self.connexionSQL.cursor()
+            cur.execute("SELECT * FROM 'Spartiate'")
+            rows = cur.fetchall()                
+            chatters = chatters.split("\n") 
+            reponse =  "**"+chatters[0]+"**\n"              
+            del chatters[0]
+            for chatter in chatters:
+                if chatter !="" :
+                    reponse += "`"+chatter+"`\n"
+                    flagTrouve = False
+                    for spartiate in rows :
+                        if spartiate[1] == chatter :
+                            score = spartiate[2] + 1
+                            if spartiate[3] != None :
+                                scoreTotal = spartiate[3] + 1
+                            else:
+                                scoreTotal = score
+                            flagTrouve = True
+                            cur.execute("UPDATE Spartiate SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
                                 
-                            if flagTrouve == False :
+                        if flagTrouve == False :
+                            if chatter != "vide" :
                                 cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
 
-                await channel.send(reponse)
+            await channel.send(reponse)
+                
+            self.connexionSQL.commit()
+            self.connexionSQL.close() 
+                
+            reponse2 =""  
+            
+            if datetime.now().hour < 1: 
+                # Recupere les scores pour les afficher une derniere fois
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+                cur = self.connexionSQL.cursor()  
+                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+                rows = cur.fetchall()
+                reponse2 +='\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n'
+                for data in rows :
+                    (spartiate,score,scoreTotal) = data
+                    if scoreTotal == None :
+                        scoreTotal=score
+                    reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+                reponse2 += "\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n"
+                    
+                    
+                # Remet les score a 0
+                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
+                rows = cur.fetchall()
+                for data in rows :
+                    (spartiate,score,total) = data
+                    cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
                 self.connexionSQL.commit()
                 self.connexionSQL.close() 
                 
-                reponse2 =""  
-            
-                if datetime.now().hour > 1: 
-                    # Recupere les scores pour les afficher une derniere fois
-                    self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-                    cur = self.connexionSQL.cursor()  
-                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
-                    rows = cur.fetchall()
-                    reponse2 +='\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n'
-                    for data in rows :
-                        (spartiate,score,scoreTotal) = data
-                        if scoreTotal == None :
-                            scoreTotal=score
-                        reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
-                    reponse2 += "\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n"
-                    
-                    
-                    # Remet les score a 0
-                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
-                    rows = cur.fetchall()
-                    for data in rows :
-                        (spartiate,score,total) = data
-                        cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
-                    self.connexionSQL.commit()
-                    self.connexionSQL.close() 
-                
-                if reponse2 != "":
-                    if len(reponse2)>1900 :
-                        messageTotal= reponse2
-                        s1 = slice(0,len(messageTotal)//2)
-                        s2 = slice(len(messageTotal)//2, len(messageTotal))
-                        await channel.send(messageTotal[s1])
-                        await channel.send(messageTotal[s2])
-                    else :
-                        await channel.send(reponse2)
+            if reponse2 != "":
+                if len(reponse2)>1900 :
+                    messageTotal= reponse2
+                    s1 = slice(0,len(messageTotal)//2)
+                    s2 = slice(len(messageTotal)//2, len(messageTotal))
+                    await channel.send(messageTotal[s1])
+                    await channel.send(messageTotal[s2])
+                else :
+                    await channel.send(reponse2)
                         
-                reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
+            reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
 
-                if datetime.now().hour > 1 and datetime.now().weekday()==6 : 
-                    self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-                    cur = self.connexionSQL.cursor()
-                    cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, pseudo ASC")
-                    rows = cur.fetchall()
-                    for data in rows :
-                        (spartiate,score,total) = data
-                        reponse3 += " •`"+spartiate+"`" + " : **"+ str(total)+"**\n"
+            if datetime.now().hour < 1 and datetime.now().weekday()==5 : 
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+                cur = self.connexionSQL.cursor()
+                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, pseudo ASC")
+                rows = cur.fetchall()
+                for data in rows :
+                    (spartiate,score,total) = data
+                    reponse3 += " •`"+spartiate+"`" + " : **"+ str(total)+"**\n"
                         
-                    await channel.send(reponse3)   
-                    self.connexionSQL.close() 
-            await asyncio.sleep(timingEnvoisMessage)    
+                await channel.send(reponse3)   
+                self.connexionSQL.close() 
+  
     
     
     async def on_message(self, message):
@@ -395,6 +412,7 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                 (spartiate,score,scoreTotal) = data
                 sortieFlux += " • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(cumul)* \n"
             sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
+            self.connexionSQL.close()
             print ('Message !score > Longueur ', RED , str(len(sortieFlux)) , WHITE)
             if len(sortieFlux)>1900 :
                 messageTotal= sortieFlux
