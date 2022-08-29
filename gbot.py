@@ -262,7 +262,7 @@ class GBoT(discord.Client):
                     
             # minute 58
             #Envois message horaire presence Spartiate
-        if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 27 :
+        if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
