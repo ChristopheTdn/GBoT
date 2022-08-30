@@ -439,7 +439,7 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 
 
 
-        print (message.author,":",message.content)
+        #print (message.author,":",message.content)
 
     def initTableSql(self):
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
