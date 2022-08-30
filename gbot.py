@@ -53,7 +53,7 @@ class GBoT(discord.Client):
     async def setup_hook(self) -> None:
         # create the background task and run it in the background
         self.bg_task_EnregistreSpartiate = self.loop.create_task(self.EnchaineProcedure(60))
-        #self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(120))
+        self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(240))
 
     async def EnchaineProcedure(self, timing):
         
@@ -72,19 +72,18 @@ class GBoT(discord.Client):
             # ENVOIS MESSAGE 
             await self.envoisMessage()  
                                
-            # APPEL SESSION SPARTIATE
-            self.appelSessionSpartiate()
-                        
             await asyncio.sleep(timing) 
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    def appelSessionSpartiate(self):
-        bob=SessionSpartiate()
-        print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate appelée')
-
+    async def appelSessionSpartiate(self,timing_sessionSpartiate):
+        await self.wait_until_ready()
+        while not self.is_closed():
+            bob=SessionSpartiate()
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate appelée')
+            await asyncio.sleep(timing_sessionSpartiate) 
 
     def enregistreSpartiate(self):
         with open(os.path.join(GBOTPATH,"spartiates.txt"), "w") as fichier:
