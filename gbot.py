@@ -81,8 +81,9 @@ class GBoT(discord.Client):
     async def appelSessionSpartiate(self,timing_sessionSpartiate):
         await self.wait_until_ready()
         while not self.is_closed():
+            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate START')
             bob=SessionSpartiate()
-            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate appelée')
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate FIN\n')
             await asyncio.sleep(timing_sessionSpartiate) 
 
     def enregistreSpartiate(self):
@@ -308,14 +309,13 @@ class GBoT(discord.Client):
                 cur = self.connexionSQL.cursor()  
                 cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
                 rows = cur.fetchall()
-                reponse2 +='\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n'
+                await channel.send('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+                reponse2 = ""
                 for data in rows :
                     (spartiate,score,scoreTotal) = data
                     if scoreTotal == None :
                         scoreTotal=score
                     reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
-                reponse2 += "\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n"
-                    
                     
                 # Remet les score a 0
                 cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
@@ -327,7 +327,7 @@ class GBoT(discord.Client):
                 self.connexionSQL.close() 
                 
             if reponse2 != "":
-                if len(reponse2)>1900 :
+                if len(reponse2)>1950 :
                     messageTotal= reponse2
                     s1 = slice(0,len(messageTotal)//2)
                     s2 = slice(len(messageTotal)//2, len(messageTotal))
@@ -335,40 +335,45 @@ class GBoT(discord.Client):
                     await channel.send(messageTotal[s2])
                 else :
                     await channel.send(reponse2)
+            await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
                         
             reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
 
             if datetime.now().hour < 1 and datetime.now().weekday()==5 : 
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
                 cur = self.connexionSQL.cursor()
-                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, pseudo ASC")
+                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>34 ORDER BY total DESC, pseudo ASC")
                 rows = cur.fetchall()
                 for data in rows :
                     (spartiate,score,total) = data
                     reponse3 += " •`"+spartiate+"`" + " : **"+ str(total)+"**\n"
-                        
-                await channel.send(reponse3)   
                 self.connexionSQL.close() 
-  
+                
+                await channel.send(reponse3)     
     
     
     async def on_message(self, message):
+        
+        # Commande >efface
         if message.content.startswith(">efface"):
             channel = self.get_channel(message.channel.id)
             messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
             for messageAEffacer in messages :
                     await messageAEffacer.delete()
-                # Commande !lurk
+                    
+        # Commande !lurk
         if message.content.startswith("!lurk"):            
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier :
                 chatters = fichier.read()
             await message.channel.send("`"+chatters+"`")
-            
+        
+        # Commande !planning    
         if message.content.startswith("!planning"): 
             with open(os.path.join(GBOTPATH,"planning.txt"),"r") as fichier :
                 planning = fichier.read()
             await message.channel.send("`"+planning+"`")
 
+        # Commande !streamer
         if message.content.startswith("!streamer"): 
             with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
                 streamer = fichier.read()
@@ -377,10 +382,12 @@ class GBoT(discord.Client):
             else:
                 reponse = "**`"+streamer+"`**"
             await message.channel.send("Actuellement le nom du Streamer est : "+reponse)
-               
+        
+        # Commande !bubzz       
         if message.content.startswith("!bubzz"):
             await message.channel.send("**Créateur du serveur** et représente **les Spartiates** au **World Séries Of Warzone**, le plus gros tournois mondial **Warzone** avec un cash price de **600 000 $**")
 
+        # Commande !raid
         if message.content.startswith("!raid"):
             await message.channel.send("**PRO TIP :** Lancer un RAID\n\
 `Via l'appli Twitch sur téléphone :`\n\
@@ -395,26 +402,31 @@ class GBoT(discord.Client):
 4. Tu attends les 10 secondes demandées.\n\
 5. Tu appuies sur « Lancer un raid maintenant ».\n")
 
+        # Commande !pub 
         if message.content.startswith("!pub"):
             await message.channel.send("Bonjour à toi jeune streamer/streameuse,\
 tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"Spartiates Entraide Twitch\"**__ est là pour te donner un coup de pouce.\n\
 \nLe principe est simple, il y a plusieurs horaires sous forme de créneaux disponibles du lundi au vendredi, il suffit simplement de t'inscrire à l'un d'entre eux pour recevoir un raid et voir ton nombre de viewers grimper en flèche et ton tchat se déchaîner.\n\
 \nÉvidemment, l'entraide est le mot d'ordre, alors on compte également sur toi pour faire parti(e) de la chaîne des raids et être présent(e) sur les streams des autres personnes qui adhèrent à ce projet.\n\
 \nAllez n'attend pas plus longtemps et deviens toi aussi un Spartiate en rejoignant ce serveur ici : https://discord.gg/SzDnhgEWrn )\n")
-            
+
+        # Commande !score            
         if message.content.startswith("!score"):
             self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
             cur = self.connexionSQL.cursor()
             cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
             rows = cur.fetchall()
-            sortieFlux =':medal: __**Score des SPARTIATES présent sur la journée :**__ \n                 *(Score journée --> Cumul sur la semaine)*\n\n'
+            
+            await message.channel.send(":medal: __**Score des SPARTIATES présent sur la journée :**__ \n                 *(Score journée --> Cumul sur la semaine)*\n\n")
+            sortieFlux =''
             for data in rows :
                 (spartiate,score,scoreTotal) = data
                 sortieFlux += " • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(cumul)* \n"
-            sortieFlux += "\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n"
             self.connexionSQL.close()
+            
             print ('Message !score > Longueur ', RED , str(len(sortieFlux)) , WHITE)
-            if len(sortieFlux)>1900 :
+            
+            if len(sortieFlux)>1950 :
                 messageTotal= sortieFlux
                 print (len(messageTotal))
                 s1 = slice(0,len(messageTotal)//2)
@@ -422,8 +434,9 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                 await message.channel.send(messageTotal[s1])
                 await message.channel.send(messageTotal[s2])
             else : 
-                await message.channel.send(sortieFlux)
-            
+                await message.channel.send(sortieFlux)           
+            await message.channel.send("\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
             await message.channel.send("**Commande GBoT :**\n\
 • `!planning` : renvois le planning de la journée.\n\
