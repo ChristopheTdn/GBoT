@@ -304,40 +304,19 @@ class GBoT(discord.Client):
             reponse2 =""  
             
             if datetime.now().hour < 1: 
-                # Recupere les scores pour les afficher une derniere fois
+                # Affiche score
+                idChannel = self.recupereIDChannelPresence()                
+                await self.afficheScore(self.get_channel(idChannel))                
+                # Remet les score de la journée a 0
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-                cur = self.connexionSQL.cursor()  
-                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
-                rows = cur.fetchall()
-                await channel.send('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
-                reponse2 = ""
-                for data in rows :
-                    (spartiate,score,scoreTotal) = data
-                    if scoreTotal == None :
-                        scoreTotal=score
-                    reponse2 += "`"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
-                    
-                # Remet les score a 0
+                cur = self.connexionSQL.cursor()
                 cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                 rows = cur.fetchall()
                 for data in rows :
                     (spartiate,score,total) = data
                     cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
                 self.connexionSQL.commit()
-                self.connexionSQL.close() 
-                
-            if reponse2 != "":
-                if len(reponse2)>1950 :
-                    messageTotal= reponse2
-                    s1 = slice(0,len(messageTotal)//2)
-                    s2 = slice(len(messageTotal)//2, len(messageTotal))
-                    await channel.send(messageTotal[s1])
-                    await channel.send(messageTotal[s2])
-                    await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
-
-                else :
-                    await channel.send(reponse2)                
-                    await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+                self.connexionSQL.close()
                         
             if datetime.now().hour < 1 and datetime.now().weekday()==5 : 
                 reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
@@ -352,6 +331,37 @@ class GBoT(discord.Client):
                 
                 await channel.send(reponse3)     
     
+    async def afficheScore(self,channel):
+        
+        # Recupere les scores pour les afficher une derniere fois
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        cur = self.connexionSQL.cursor()  
+        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        rows = cur.fetchall()
+        await channel.send('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+
+        reponse2 = ""
+        
+        for data in rows :
+            (spartiate,score,scoreTotal) = data
+            if scoreTotal == None :
+                scoreTotal=score
+            reponse2 += "• `"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+                
+        if reponse2 != "":
+            if len(reponse2)>1950 :
+                messageTotal= reponse2
+                s1 = slice(0,len(messageTotal)//2)
+                s2 = slice(len(messageTotal)//2, len(messageTotal))
+                await channel.send(messageTotal[s1])
+                await channel.send(messageTotal[s2])
+                await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+
+            else :
+                await channel.send(reponse2)                
+                await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+
+        self.connexionSQL.close()
     
     async def on_message(self, message):
         
@@ -413,30 +423,7 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 
         # Commande !score            
         if message.content.startswith("!score"):
-            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
-            cur = self.connexionSQL.cursor()
-            cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
-            rows = cur.fetchall()
-            
-            await message.channel.send(":medal: __**Score des SPARTIATES présent sur la journée :**__ \n                 *(Score journée --> Cumul sur la semaine)*\n\n")
-            sortieFlux =''
-            for data in rows :
-                (spartiate,score,scoreTotal) = data
-                sortieFlux += " • `"+spartiate+"`" + " : **"+ str(score) +"**  --> **"+ str(scoreTotal)+"** *(cumul)* \n"
-            self.connexionSQL.close()
-            
-            print ('Message !score > Longueur ', RED , str(len(sortieFlux)) , WHITE)
-            
-            if len(sortieFlux)>1950 :
-                messageTotal= sortieFlux
-                print (len(messageTotal))
-                s1 = slice(0,len(messageTotal)//2)
-                s2 = slice(len(messageTotal)//2, len(messageTotal))
-                await message.channel.send(messageTotal[s1])
-                await message.channel.send(messageTotal[s2])
-            else : 
-                await message.channel.send(sortieFlux)           
-            await message.channel.send("\n*Chaque présence sur un créneau ajoute **1 pt**. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+            await self.afficheScore(message.channel)
 
         if message.content.startswith("!aide") or message.content.startswith("!gbot"):
             await message.channel.send("**Commande GBoT :**\n\
