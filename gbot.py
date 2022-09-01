@@ -333,13 +333,14 @@ class GBoT(discord.Client):
                     s2 = slice(len(messageTotal)//2, len(messageTotal))
                     await channel.send(messageTotal[s1])
                     await channel.send(messageTotal[s2])
-                else :
-                    await channel.send(reponse2)
-            await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
-                        
-            reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
+                    await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
 
+                else :
+                    await channel.send(reponse2)                
+                    await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+                        
             if datetime.now().hour < 1 and datetime.now().weekday()==5 : 
+                reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
                 cur = self.connexionSQL.cursor()
                 cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>34 ORDER BY total DESC, pseudo ASC")
