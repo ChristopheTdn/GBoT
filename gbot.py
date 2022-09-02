@@ -318,18 +318,9 @@ class GBoT(discord.Client):
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
                         
-            if datetime.now().hour < 1 and datetime.now().weekday()==5 : 
-                reponse3 ="\n:medal: __**SPARTS SUPREMES**__\n"
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-                cur = self.connexionSQL.cursor()
-                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>34 ORDER BY total DESC, pseudo ASC")
-                rows = cur.fetchall()
-                for data in rows :
-                    (spartiate,score,total) = data
-                    reponse3 += " •`"+spartiate+"`" + " : **"+ str(total)+"**\n"
-                self.connexionSQL.close() 
+            if datetime.now().hour < 1 and datetime.now().weekday()==5 :            
+                await self.afficheSupreme(self.get_channel(1005912896011784275)) 
                 
-                await channel.send(reponse3)     
     
     async def afficheScore(self,channel):
         
@@ -362,7 +353,22 @@ class GBoT(discord.Client):
                 await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
 
         self.connexionSQL.close()
-    
+    async def afficheSupreme(self,channel):
+        await channel.send("\n:medal: __**SPARTS SUPREMES**__\n")
+        reponse =""
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        cur = self.connexionSQL.cursor()
+        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        rows = cur.fetchall()
+        for data in rows :
+            (spartiate,score,total) = data
+            reponse += " •`"+spartiate+"`" + " : **"+ str(total)+"**\n"
+        self.connexionSQL.close()
+        if reponse != "":     
+            await channel.send(reponse)   
+        else:
+            await channel.send("Classement **Spart supreme** indisponible...\n\n")
+            
     async def on_message(self, message):
         
         # Commande >efface
@@ -384,6 +390,9 @@ class GBoT(discord.Client):
                 planning = fichier.read()
             await message.channel.send("`"+planning+"`")
 
+        if message.content.startswith("!supreme"): 
+            await self.afficheSupreme(message.channel)
+            
         # Commande !streamer
         if message.content.startswith("!streamer"): 
             with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
