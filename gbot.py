@@ -395,7 +395,7 @@ class GBoT(discord.Client):
 
         admin = False
         # determine si la commande est lancée par un Admin
-        if print (message.author.display_name) == 'GToF_':
+        if message.author.display_name == 'GToF_':
             admin=True
             
         if admin and message.content.startswith(">nomine"):
