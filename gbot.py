@@ -392,14 +392,24 @@ class GBoT(discord.Client):
         '''
             
     async def on_message(self, message):
-        
-        # Commande >efface
-        if message.content.startswith(">efface"):
-            channel = self.get_channel(message.channel.id)
-            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
-            for messageAEffacer in messages :
+
+        admin = False
+        # determine si la commande est lancée par un Admin
+        if print (message.author.display_name) == 'GToF__':
+            admin=True
+            
+        if admin :
+            if message.content.startswith(">nomine"):
+                await self.distributionRole(message.channel)
+                    # Commande >efface
+            elif admin and message.content.startswith(">efface"):
+                channel = self.get_channel(message.channel.id)
+                messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
+                for messageAEffacer in messages :
                     await messageAEffacer.delete()
-                    
+
+            
+                     
         # Commande !lurk
         if message.content.startswith("!lurk"):            
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier :
@@ -468,32 +478,18 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 • `!supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
 • `!aide` ou `!gbot` : cette aide.\n\
 ")
-        if message.content.startswith(">role"):
-            user= get(self.get_all_members(),display_name="GToF_") 
-            await user.add_roles(discord.utils.get(user.guild.roles, name="Spart Suprême Modo"))
-            await user.remove_roles(discord.utils.get(user.guild.roles, name="Baby Spart"))
-            print ('role ajouté à ToF')
-            users = self.get_all_members()
-            for spartiate in users:
-                if discord.utils.get(user.guild.roles, name="Spart Suprême Modo") in spartiate.roles:
-                    print(spartiate.display_name)
-                if discord.utils.get(user.guild.roles, name="Spart Suprême") in spartiate.roles:
-                    print(spartiate.display_name)
         
-        if message.content.startswith(">nomine"):
-            await self.distributionRole(message.channel)
+
 
     async def distributionRole (self,channel):
-        # Supprime le role des sparts supremes actuels
+        # Supprime le role des sparts supremes actuels et attribut en fonction du score 
         users = self.get_all_members()
         listeRole= self.get_guild(951887546273640598).roles
-        # Assigne le role des sparts supremes actualisé
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
-        listeAjout=[]
-        
+        listeAjout=[]        
         for data in rows :
             (spartiate,score,total) = data
             listeAjout.append(spartiate)
