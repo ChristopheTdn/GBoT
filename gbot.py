@@ -359,7 +359,23 @@ class GBoT(discord.Client):
 
         self.connexionSQL.close()
     async def afficheSupreme(self,channel):
+        users = self.get_all_members()
+        listeRole= self.get_guild(951887546273640598).roles
+        listeSupreme=[]
+        message = ''
+        for spartiate in users:
+                if discord.utils.get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
+                    listeSupreme.append(spartiate.display_name)
+                if discord.utils.get(listeRole, name="Spart Suprême") in spartiate.roles:
+                    listeSupreme.append(spartiate.display_name)
         await channel.send("\n:medal: __**SPARTS SUPREMES**__\n")
+        for spartSupreme in listeSupreme:
+            message +=" • `"+spartSupreme+"`\n"
+        await channel.send(message)
+            
+        
+        
+        '''
         reponse =""
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()
@@ -373,6 +389,7 @@ class GBoT(discord.Client):
             await channel.send(reponse)   
         else:
             await channel.send("Classement **Spart supreme** indisponible...\n\n")
+        '''
             
     async def on_message(self, message):
         
@@ -447,7 +464,8 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 • `!bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
 • `!raid` : tuto pour réaliser un raid.\n\
 • `!pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
-• `!score` : Obtient les scores des spartiates pour la journée en cours.\n\
+• `!score` : Obtenir les scores des spartiates pour la journée en cours.\n\
+• `!supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
 • `!aide` ou `!gbot` : cette aide.\n\
 ")
         if message.content.startswith(">role"):
@@ -461,9 +479,41 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                     print(spartiate.display_name)
                 if discord.utils.get(user.guild.roles, name="Spart Suprême") in spartiate.roles:
                     print(spartiate.display_name)
+        
+        if message.content.startswith(">nomine"):
+            await self.distributionRole(message.channel)
 
+    async def distributionRole (self,channel):
+        # Supprime le role des sparts supremes actuels
+        users = self.get_all_members()
+        listeRole= self.get_guild(951887546273640598).roles
+        # Assigne le role des sparts supremes actualisé
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        cur = self.connexionSQL.cursor()
+        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        rows = cur.fetchall()
+        listeAjout=[]
+        
+        for data in rows :
+            (spartiate,score,total) = data
+            listeAjout.append(spartiate)
+        self.connexionSQL.close()
+        
+        for spartiate in users:
+                if discord.utils.get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
+                    await spartiate.remove_roles(discord.utils.get(listeRole, name="Spart Suprême Modo"))
+                    await spartiate.add_roles(discord.utils.get(listeRole, name="Spartiate"))
+                    print("on retire ",spartiate.display_name)
+                if discord.utils.get(listeRole, name="Spart Suprême") in spartiate.roles:
+                    await spartiate.remove_roles(discord.utils.get(listeRole, name="Spart Suprême"))
+                    await spartiate.add_roles(discord.utils.get(listeRole, name="Spartiate"))
+                    print("on retire ",spartiate.display_name)                
+                if spartiate.display_name.lower() in listeAjout:
+                    await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême"))
+                    print("on ajoute ",spartiate.display_name) 
 
-        #print (message.author,":",message.content)
+            
+
 
     def initTableSql(self):
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
