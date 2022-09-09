@@ -1,4 +1,5 @@
 
+from unicodedata import name
 import discord
 from discord.ext import commands,tasks
 from discord.utils import get
@@ -162,6 +163,8 @@ class GBoT(discord.Client):
             channelID = 979855851340857414
         elif jour==4 : # Vendredi
             channelID = 979856098855120916 
+        elif jour==5 : # Samedi
+            channelID = 979856179645796382
             
         if DEBUG=="True" : 
             channelID = 979856098855120916 
@@ -185,7 +188,9 @@ class GBoT(discord.Client):
         elif jour==3 : # Jeudi
             channelID = 1008377565708292116
         elif jour==4 : # Vendredi
-            channelID = 1005912896011784275
+            channelID = 1005912896011784275 
+        elif jour==5 : #Samedi
+            channelID = 1017408836878995486
         
         if DEBUG=="True" : 
             channelID = 1005912896011784275
@@ -318,7 +323,7 @@ class GBoT(discord.Client):
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
                         
-            if datetime.now().hour < 1 and datetime.now().weekday()==5 :            
+            if datetime.now().hour < 1 and datetime.now().weekday()==6 :            
                 await self.afficheSupreme(self.get_channel(1005912896011784275)) 
                 
     
@@ -445,7 +450,17 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
 • `!score` : Obtient les scores des spartiates pour la journée en cours.\n\
 • `!aide` ou `!gbot` : cette aide.\n\
 ")
-
+        if message.content.startswith(">role"):
+            user= get(self.get_all_members(),display_name="GToF_") 
+            await user.add_roles(discord.utils.get(user.guild.roles, name="Spart Suprême Modo"))
+            await user.remove_roles(discord.utils.get(user.guild.roles, name="Baby Spart"))
+            print ('role ajouté à ToF')
+            users = self.get_all_members()
+            for spartiate in users:
+                if discord.utils.get(user.guild.roles, name="Spart Suprême Modo") in spartiate.roles:
+                    print(spartiate.display_name)
+                if discord.utils.get(user.guild.roles, name="Spart Suprême") in spartiate.roles:
+                    print(spartiate.display_name)
 
 
         #print (message.author,":",message.content)
@@ -500,6 +515,7 @@ if __name__ == "__main__":
     intents.members = True
     intents.message_content = True
     intents.messages = True
+    intents.members = True
 
     bot = GBoT(command_prefix='?', description=description, intents=intents)
     bot.run(TOKEN)
