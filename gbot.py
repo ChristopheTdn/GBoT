@@ -398,15 +398,14 @@ class GBoT(discord.Client):
         if print (message.author.display_name) == 'GToF_':
             admin=True
             
-        if admin :
-            if message.content.startswith(">nomine"):
+        if admin and message.content.startswith(">nomine"):
                 await self.distributionRole(message.channel)
-                    # Commande >efface
-            elif admin and message.content.startswith(">efface"):
-                channel = self.get_channel(message.channel.id)
-                messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
-                for messageAEffacer in messages :
-                    await messageAEffacer.delete()
+        # Commande >efface
+        if admin and message.content.startswith(">efface"):
+            channel = self.get_channel(message.channel.id)
+            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
+            for messageAEffacer in messages :
+                await messageAEffacer.delete()
 
             
                      
