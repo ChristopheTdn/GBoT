@@ -504,10 +504,14 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                     await spartiate.add_roles(discord.utils.get(listeRole, name="Spartiate"))
                     print("on retire ",spartiate.display_name)                
                 if spartiate.display_name.lower() in listeAjout:
-                    await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême"))
-                    print("on ajoute ",spartiate.display_name) 
+                    if discord.utils.get(listeRole, name="Modérateur") in spartiate.roles:
+                        await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême Modo"))
+                        print("on ajoute ",spartiate.display_name," comme @Spart Suprême Modo")
+                    else:
+                        await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême"))
+                        print("on ajoute ",spartiate.display_name," comme @Spart Suprême")    
 
-            
+
 
 
     def initTableSql(self):
