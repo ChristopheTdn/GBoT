@@ -504,7 +504,9 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                     await spartiate.add_roles(discord.utils.get(listeRole, name="Spartiate"))
                     print("on retire ",spartiate.display_name)                
                 if spartiate.display_name.lower() in listeAjout:
-                    if discord.utils.get(listeRole, name="Modérateur") in spartiate.roles:
+                    if (discord.utils.get(listeRole, name="Modérateur") in spartiate.roles) or \
+                       (discord.utils.get(listeRole, name="Co-créateur") in spartiate.roles)or \
+                       (discord.utils.get(listeRole, name="Créateur") in spartiate.roles) :
                         await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême Modo"))
                         print("on ajoute ",spartiate.display_name," comme @Spart Suprême Modo")
                     else:
