@@ -323,8 +323,8 @@ class GBoT(discord.Client):
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
                         
-            if datetime.now().hour < 1 and datetime.now().weekday()==6 :            
-                await self.afficheSupreme(self.get_channel(1005912896011784275)) 
+            if datetime.now().hour < 1 and datetime.now().weekday()==6 : 
+                await self.distributionRole(self.get_channel(979857092603162695)) 
                 
     
     async def afficheScore(self,channel):
@@ -358,6 +358,7 @@ class GBoT(discord.Client):
                 await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
 
         self.connexionSQL.close()
+        
     async def afficheSupreme(self,channel):
         users = self.get_all_members()
         listeRole= self.get_guild(951887546273640598).roles
@@ -370,27 +371,9 @@ class GBoT(discord.Client):
                     listeSupreme.append(spartiate.display_name)
         await channel.send("\n:medal: __**SPARTS SUPREMES**__\n")
         for spartSupreme in listeSupreme:
-            message +=" • `"+spartSupreme+"`\n"
+            message +="> • `"+spartSupreme+"`\n"
         await channel.send(message)
-            
         
-        
-        '''
-        reponse =""
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
-        cur = self.connexionSQL.cursor()
-        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
-        rows = cur.fetchall()
-        for data in rows :
-            (spartiate,score,total) = data
-            reponse += " •`"+spartiate+"`" + " : **"+ str(total)+"**\n"
-        self.connexionSQL.close()
-        if reponse != "":     
-            await channel.send(reponse)   
-        else:
-            await channel.send("Classement **Spart supreme** indisponible...\n\n")
-        '''
-            
     async def on_message(self, message):
 
         admin = False
@@ -488,10 +471,10 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
-        listeAjout=[]        
+        classementSpartiate ={}
         for data in rows :
             (spartiate,score,total) = data
-            listeAjout.append(spartiate)
+            classementSpartiate[spartiate]=total
         self.connexionSQL.close()
         
         for spartiate in users:
@@ -503,7 +486,7 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                     await spartiate.remove_roles(discord.utils.get(listeRole, name="Spart Suprême"))
                     await spartiate.add_roles(discord.utils.get(listeRole, name="Spartiate"))
                     print("on retire ",spartiate.display_name)                
-                if spartiate.display_name.lower() in listeAjout:
+                if spartiate.display_name.lower() in classementSpartiate :
                     if (discord.utils.get(listeRole, name="Modérateur") in spartiate.roles) or \
                        (discord.utils.get(listeRole, name="Co-créateur") in spartiate.roles)or \
                        (discord.utils.get(listeRole, name="Créateur") in spartiate.roles) :
@@ -512,6 +495,45 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
                     else:
                         await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême"))
                         print("on ajoute ",spartiate.display_name," comme @Spart Suprême")    
+
+        # A deplacer vers distribution role apres debug
+        users = self.get_all_members()
+        listeRole= self.get_guild(951887546273640598).roles
+        listeSupreme=[]
+        message = ''
+        for spartiate in users:
+                if discord.utils.get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
+                    listeSupreme.append(spartiate.id)
+                if discord.utils.get(listeRole, name="Spart Suprême") in spartiate.roles:
+                    listeSupreme.append(spartiate.id)
+                    
+        message =  "\nBonjour à tous, voici les résultats d'attribution des rôles pour cette semaine :\n\n"
+        message += ":yellow_circle: Les <@&951980979327762492> sont :\n"
+        message +="   >" 
+        for spartSupreme in listeSupreme:
+            message +=" • <@"+str(spartSupreme)+">"
+        message += "\n\n"
+        
+        
+        message += ":medal: Le top viewers des Sparts Suprêmes ::medal:\n" 
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        cur = self.connexionSQL.cursor()
+        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        rows = cur.fetchall()
+        place = 1
+        scoreTotal = 0
+        for data in rows :
+            (membre,score,total) = data
+            if scoreTotal > total :
+                place += 1
+            scoreTotal=total
+            message += "> n° "+str(place) +" - `"+membre+"`" + " : **"+ str(total)+" pts**\n"
+
+        self.connexionSQL.close()
+        await channel.send(message)  
+        message = "\n\n"
+        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux **36 H** en avance par rapport aux autres spartiates.\n" 
+        await channel.send(message) 
 
 
 
