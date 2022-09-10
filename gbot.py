@@ -66,13 +66,13 @@ class GBoT(discord.Client):
             
             # RECUPERE PLANNING               
             await self.recuperePlanning()   
-                         
+
             # SAUVEGARDE PLANNING SUIR DISQUE                
             self.sauvePlanning() 
-                          
+
             # ENVOIS MESSAGE 
             await self.envoisMessage()  
-                               
+
             await asyncio.sleep(timing) 
 
     async def on_ready(self):
