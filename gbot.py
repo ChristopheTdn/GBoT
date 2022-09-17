@@ -107,7 +107,11 @@ class GBoT(discord.Client):
         rows = cur.fetchall()
         planning = ""
         streamer = "vide"
-        listeCreneauJour=["13h00 - 14h00 :",
+        listeCreneauJour=["09h00 - 10h00 :",
+                        "10h00 - 11h00 :",
+                        "11h00 - 12h00 :",
+                        "12h00 - 13h00 :",
+                        "13h00 - 14h00 :",
                         "14h00 - 15h00 :",
                         "15h00 - 16h00 :",
                         "16h00 - 17h00 :",
@@ -226,7 +230,11 @@ class GBoT(discord.Client):
             self.connexionSQL.close()
             
         else:
-            listeCreneau=["13h00 - 14h00 :",
+            listeCreneau=["09h00 - 10h00 :",
+                    "10h00 - 11h00 :",
+                    "11h00 - 12h00 :",
+                    "12h00 - 13h00 :",
+                    "13h00 - 14h00 :",
                     "14h00 - 15h00 :",
                     "15h00 - 16h00 :",
                     "16h00 - 17h00 :",
@@ -267,7 +275,7 @@ class GBoT(discord.Client):
                     
             # minute 58
             #Envois message horaire presence Spartiate
-        if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
+        if (datetime.now().hour< 1 or datetime.now().hour >=9) and datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
@@ -532,7 +540,7 @@ tu débutes dans le stream et tu galères à avoir ton affiliation ou à te cré
         self.connexionSQL.close()
         await channel.send(message)  
         message = "\n\n"
-        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux **36 H** en avance par rapport aux autres spartiates.\n" 
+        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux **48 H** en avance au lieu de 24 H pour les autre Spartiates.\n" 
         await channel.send(message) 
 
 

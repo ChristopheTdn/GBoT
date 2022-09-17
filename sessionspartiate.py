@@ -28,7 +28,7 @@ class SessionSpartiate:
             '''
             
             '''
-            if datetime.now().hour< 1 or datetime.now().hour >=13 :
+            if datetime.now().hour< 1 or datetime.now().hour >=9 :
                 _creneauHoraire = self.DetermineCreneau()
                 _streamer = self.ObtenirStreamer(_creneauHoraire)
             
