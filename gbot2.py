@@ -61,13 +61,13 @@ class GBoT(commands.Bot):
         intents.message_content = True
         intents.messages = True
         intents.members = True
-        super().__init__(command_prefix ="?",intents=intents)
+        super().__init__(command_prefix ="!",intents=intents)
 
         # Initialise Table SQL
         self.initTableSql() 
         
     async def setup_hook(self) -> None:
-        await self.tree.sync(guild=GUILD)
+        #await self.tree.sync(guild=GUILD)
         # create the background task and run it in the background
         self.bg_task_EnregistreSpartiate = self.loop.create_task(self.EnchaineProcedure(60))
         self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(240))
@@ -575,8 +575,36 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def score(ctx:commands.Context): 
         # Commande !score
-        #await ctx.defer(ephemeral=False)            
-        await GBoT.afficheScore(ctx.channel)
+        await ctx.defer(ephemeral=True)
+        # Recupere les scores pour les afficher une derniere fois
+        connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        cur = connexionSQL.cursor()  
+        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        rows = cur.fetchall()
+                #await ctx.defer(ephemeral=False)
+        await ctx.reply('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+
+        reponse2 = ""
+        
+        for data in rows :
+            (spartiate,score,scoreTotal) = data
+            if scoreTotal == None :
+                scoreTotal=score
+            reponse2 += "• `"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+            
+        connexionSQL.close()
+                
+        if reponse2 != "":
+            if len(reponse2)>1950 :
+                messageTotal= reponse2
+                s1 = slice(0,len(messageTotal)//2)
+                s2 = slice(len(messageTotal)//2, len(messageTotal))
+                await ctx.reply(messageTotal[s1])
+                await ctx.reply(messageTotal[s2])
+                await ctx.reply("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+            else :
+                await ctx.reply(reponse2)                
+                await ctx.reply("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
 
     @GBoT.hybrid_command(name = "pub", description = "Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.")
     @app_commands.guilds(GUILD)
