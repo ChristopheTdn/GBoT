@@ -575,13 +575,13 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def score(ctx:commands.Context): 
         # Commande !score
-        await ctx.defer(ephemeral=True)
-        # Recupere les scores pour les afficher une derniere fois
+
+        # Recupere les scores pour les afficher
         connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = connexionSQL.cursor()  
         cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
         rows = cur.fetchall()
-                #await ctx.defer(ephemeral=False)
+        await ctx.defer(ephemeral=True)
         await ctx.reply('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
 
         reponse2 = ""
@@ -599,11 +599,15 @@ if __name__ == "__main__":
                 messageTotal= reponse2
                 s1 = slice(0,len(messageTotal)//2)
                 s2 = slice(len(messageTotal)//2, len(messageTotal))
+                await ctx.defer(ephemeral=True)
                 await ctx.reply(messageTotal[s1])
+                await ctx.defer(ephemeral=True)
                 await ctx.reply(messageTotal[s2])
                 await ctx.reply("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
             else :
-                await ctx.reply(reponse2)                
+                await ctx.defer(ephemeral=True)
+                await ctx.reply(reponse2)  
+                await ctx.defer(ephemeral=True)              
                 await ctx.reply("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
 
     @GBoT.hybrid_command(name = "pub", description = "Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.")
