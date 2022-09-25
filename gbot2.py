@@ -632,19 +632,19 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def link(ctx:commands.Context):
         await ctx.send('**PRO TIP :** Lier Twitch et Discord\n\
-            __**Via PC :**__\n\
+        __**Via PC :**__\n\
             • Tu vas dans les paramètres de discord\n\
             • Tu vas dans "Connexion"\n\
             • Tu sélectionnes le logo "Twitch" et la liaison se fait.\n\
             • Vérifiez bien que le "Afficher sur mon profil" soit bien coché.\n\
-            __**Via Téléphone :**__\n\
+        __**Via Téléphone :**__\n\
             • Tu vas dans les paramètres de discord\n\
             • Tu vas dans "Connexion"\n\
             • Tu cliques en haut à droite sur "Ajouter"\n\
             • Tu sélectionnes le logo "Twitch" et la liaison se fait.\n\
             • Vérifiez bien que le "Afficher sur mon profil" soit bien coché.\n')
 
-    @GBoT.hybrid_command(name = "aide", description = "cette aide.")
+    @GBoT.hybrid_command(name = "aide", description = "Afficher les commandes du GBoT.")
     @app_commands.guilds(GUILD)
     async def aide(ctx:commands.Context):
         await ctx.defer(ephemeral=True)
