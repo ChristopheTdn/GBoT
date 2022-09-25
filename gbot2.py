@@ -1,4 +1,5 @@
 
+from tkinter import HIDDEN
 from unicodedata import name
 import discord
 from discord.ext import commands,tasks
@@ -541,7 +542,7 @@ if __name__ == "__main__":
         with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier :
             chatters = fichier.read()
         await ctx.defer(ephemeral=True)
-        await ctx.reply(chatters)
+        await ctx.send(chatters)
 
     @GBoT.hybrid_command(name = "planning", description = "renvois le planning de la journée.")
     @app_commands.guilds(GUILD)
@@ -549,8 +550,8 @@ if __name__ == "__main__":
         # Commande !planning     
         with open(os.path.join(GBOTPATH,"planning.txt"),"r") as fichier :
             planning = fichier.read()
-        #await ctx.defer(ephemeral=False)
-        await ctx.reply("`"+planning+"`")
+        await ctx.defer(ephemeral=True)
+        await ctx.send("`"+planning+"`")
 
     @GBoT.hybrid_command(name = "streamer", description = "renvois le streamer actuel du créneau horaire.")
     @app_commands.guilds(GUILD)
@@ -562,13 +563,14 @@ if __name__ == "__main__":
             reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
         else:
             reponse = "**`"+streamer+"`**"
-        #await ctx.defer(ephemeral=False)
-        await ctx.reply("Actuellement le nom du Streamer est : "+reponse)
+        #await ctx.defer(ephemeral=True)
+        await ctx.send("Actuellement le nom du Streamer est : "+reponse)
         
     @GBoT.hybrid_command(name = "supreme", description = "renvois la liste des Sparts Supremes.")
     @app_commands.guilds(GUILD)
     async def supreme(ctx:commands.Context):        
         # Commande !supreme
+        await ctx.defer(ephemeral=True)
         await GBoT.afficheSupreme(ctx.channel)
 
     @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des spartiates pour la journée en cours.")
