@@ -379,9 +379,7 @@ class GBoT(commands.Bot):
                 reponse2 = ""
                   
         return (reponse1,reponse2)
-        
-        
-    
+   
     async def afficheScore(self,channel):
         
         reponse1,reponse2 = self.recupereScore()
@@ -601,7 +599,7 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def pub(ctx:commands.Context):  
         # Commande !pub 
-        await ctx.reply("Bonjour à toi jeune streamer/streameuse,\
+        await ctx.send("Bonjour à toi jeune streamer/streameuse,\
     tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"Spartiates Entraide Twitch\"**__ est là pour te donner un coup de pouce.\n\
     \nLe principe est simple, il y a plusieurs horaires sous forme de créneaux disponibles du lundi au vendredi, il suffit simplement de t'inscrire à l'un d'entre eux pour recevoir un raid et voir ton nombre de viewers grimper en flèche et ton tchat se déchaîner.\n\
     \nÉvidemment, l'entraide est le mot d'ordre, alors on compte également sur toi pour faire parti(e) de la chaîne des raids et être présent(e) sur les streams des autres personnes qui adhèrent à ce projet.\n\
@@ -611,7 +609,7 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def raid(ctx:commands.Context): 
         # Commande !raid
-        await ctx.reply("**PRO TIP :** Lancer un RAID\n\
+        await ctx.send("**PRO TIP :** Lancer un RAID\n\
     `Via l'appli Twitch sur téléphone :`\n\
     1. Tu vas sur ton tchat twitch et tu mets la commande: **/raid pseudo** ( exemple: /raid bubzz_tv ), tu envois le message.\n\
     2. Tu attends les 10 secondes demandés.\n\
@@ -628,21 +626,22 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def bubzz(ctx:commands.Context):
         # Commande !bubzz       
-        await ctx.reply("**Créateur du serveur** et représente **les Spartiates** au **World Séries Of Warzone**, le plus gros tournois mondial **Warzone** avec un cash price de **600 000 $**")
+        await ctx.send("**Créateur du serveur** et représente **les Spartiates** au **World Séries Of Warzone**, le plus gros tournois mondial **Warzone** avec un cash price de **600 000 $**")
 
     @GBoT.hybrid_command(name = "aide", description = "cette aide.")
     @app_commands.guilds(GUILD)
     async def aide(ctx:commands.Context):
-        await ctx.reply("**Commande GBoT :**\n\
-• `!planning` : renvois le planning de la journée.\n\
-• `!streamer` : renvois le streamer actuel du créneau horaire.\n\
-• `!lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
-• `!bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
-• `!raid` : tuto pour réaliser un raid.\n\
-• `!pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
-• `!score` : Obtenir les scores des spartiates pour la journée en cours.\n\
-• `!supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
-• `!aide` : cette aide.\n\
+        await ctx.defer(ephemeral=True)
+        await ctx.send("**Commande GBoT :**\n\
+• `/planning` : renvois le planning de la journée.\n\
+• `/streamer` : renvois le streamer actuel du créneau horaire.\n\
+• `/lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
+• `/bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
+• `/raid` : tuto pour réaliser un raid.\n\
+• `/pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
+• `/score` : Obtenir les scores des spartiates pour la journée en cours.\n\
+• `/supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
+• `/aide` : cette aide.\n\
 ")
 
 
