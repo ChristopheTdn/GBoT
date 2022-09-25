@@ -628,23 +628,39 @@ if __name__ == "__main__":
         # Commande !bubzz       
         await ctx.send("**Créateur du serveur** et représente **les Spartiates** au **World Séries Of Warzone**, le plus gros tournois mondial **Warzone** avec un cash price de **600 000 $**")
 
+    @GBoT.hybrid_command(name = "link", description = "lier son compte twitch a son compte discord.")
+    @app_commands.guilds(GUILD)
+    async def link(ctx:commands.Context):
+        await ctx.send('**PRO TIP :** Lier Twitch et Discord\n\
+            __**Via PC :**__\n\
+            • Tu vas dans les paramètres de discord\n\
+            • Tu vas dans "Connexion"\n\
+            • Tu sélectionnes le logo "Twitch" et la liaison se fait.\n\
+            • Vérifiez bien que le "Afficher sur mon profil" soit bien coché.\n\
+            __**Via Téléphone :**__\n\
+            • Tu vas dans les paramètres de discord\n\
+            • Tu vas dans "Connexion"\n\
+            • Tu cliques en haut à droite sur "Ajouter"\n\
+            • Tu sélectionnes le logo "Twitch" et la liaison se fait.\n\
+            • Vérifiez bien que le "Afficher sur mon profil" soit bien coché.\n')
+
     @GBoT.hybrid_command(name = "aide", description = "cette aide.")
     @app_commands.guilds(GUILD)
     async def aide(ctx:commands.Context):
         await ctx.defer(ephemeral=True)
         await ctx.send("**Commande GBoT :**\n\
-• `/planning` : renvois le planning de la journée.\n\
-• `/streamer` : renvois le streamer actuel du créneau horaire.\n\
-• `/lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
-• `/bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
-• `/raid` : tuto pour réaliser un raid.\n\
-• `/pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
-• `/score` : Obtenir les scores des spartiates pour la journée en cours.\n\
-• `/supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
-• `/aide` : cette aide.\n\
-")
-
-
+            • `/aide` : Les commandes du GBoT.\n\
+            • `/bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
+            • `/link` : tuto pour lier son compte twitch et discord.\n\
+            • `/lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
+            • `/planning` : renvois le planning de la journée.\n\
+            • `/pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
+            • `/raid` : tuto pour réaliser un raid.\n\
+            • `/score` : Obtenir les scores des spartiates pour la journée en cours.\n\
+            • `/streamer` : renvois le streamer actuel du créneau horaire.\n\
+            • `/supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
+            ")
+        
     GBoT.run(TOKEN)
 
 
