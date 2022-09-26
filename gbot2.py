@@ -624,12 +624,6 @@ if __name__ == "__main__":
     4. Tu attends les 10 secondes demandées.\n\
     5. Tu appuies sur « Lancer un raid maintenant ».\n")
 
-    @GBoT.hybrid_command(name = "bubzz", description = "Créateur du channel Discord 'Les Spartiates'.")
-    @app_commands.guilds(GUILD)
-    async def bubzz(ctx:commands.Context):
-        # Commande !bubzz       
-        await ctx.send("<@681904388687659008> : **Créateur du serveur Les Spartiates**. Représente **les Spartiates** au **World Séries Of Warzone** (Aout 2022), le plus gros tournois mondial **Warzone**")
-
     @GBoT.hybrid_command(name = "link", description = "lier son compte twitch a son compte discord.")
     @app_commands.guilds(GUILD)
     async def link(ctx:commands.Context):
@@ -652,7 +646,6 @@ if __name__ == "__main__":
         await ctx.defer(ephemeral=True)
         await ctx.send("**Commande GBoT :**\n\
             • `/aide` : Les commandes du GBoT.\n\
-            • `/bubzz` : Créateur du channel Discord 'Les Spartiates'.\n\
             • `/link` : tuto pour lier son compte twitch et discord.\n\
             • `/lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
             • `/planning` : renvois le planning de la journée.\n\
