@@ -368,15 +368,13 @@ class GBoT(commands.Bot):
                 scoreTotal=score
             reponse += "• `"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
 
-                        
-        if reponse != "":
-            if len(reponse)>1980 :
-                messageTotal= reponse
-                reponse1 = messageTotal[slice(0,1980)]
-                reponse2 = messageTotal[slice(1980, len(messageTotal))]
-            else :
-                reponse1= reponse
-                reponse2 = ""
+        if len(reponse)>1980 :
+            messageTotal= reponse
+            reponse1 = messageTotal[slice(0,1980)]
+            reponse2 = messageTotal[slice(1980, len(messageTotal))]
+        else :
+            reponse1= reponse
+            reponse2 = ""
                   
         return (reponse1,reponse2)
    
