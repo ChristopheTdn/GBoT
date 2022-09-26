@@ -624,7 +624,7 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def bubzz(ctx:commands.Context):
         # Commande !bubzz       
-        await ctx.send("@BuBzZ_TV#5709 : **Créateur du serveur** et représente **les Spartiates** au **World Séries Of Warzone**, le plus gros tournois mondial **Warzone** avec un cash price de **600 000 $**")
+        await ctx.send("<@681904388687659008> : **Créateur du serveur Les Spartiates**. Représente **les Spartiates** au **World Séries Of Warzone** (Aout 2022), le plus gros tournois mondial **Warzone**")
 
     @GBoT.hybrid_command(name = "link", description = "lier son compte twitch a son compte discord.")
     @app_commands.guilds(GUILD)
