@@ -593,10 +593,10 @@ if __name__ == "__main__":
         await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
 
 
-    @GBoT.hybrid_command(name = "pub", description = "Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.")
+    @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.")
     @app_commands.guilds(GUILD)
-    async def pub(ctx:commands.Context):  
-        # Commande !pub 
+    async def discord(ctx:commands.Context):  
+        # Commande !discord
         await ctx.send("Bonjour à toi jeune streamer/streameuse,\
     tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"Spartiates Entraide Twitch\"**__ est là pour te donner un coup de pouce.\n\
     \nLe principe est simple, il y a plusieurs horaires sous forme de créneaux disponibles du lundi au vendredi, il suffit simplement de t'inscrire à l'un d'entre eux pour recevoir un raid et voir ton nombre de viewers grimper en flèche et ton tchat se déchaîner.\n\
@@ -624,7 +624,7 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def bubzz(ctx:commands.Context):
         # Commande !bubzz       
-        await ctx.send("**Créateur du serveur** et représente **les Spartiates** au **World Séries Of Warzone**, le plus gros tournois mondial **Warzone** avec un cash price de **600 000 $**")
+        await ctx.send("@BuBzZ_TV#5709 : **Créateur du serveur** et représente **les Spartiates** au **World Séries Of Warzone**, le plus gros tournois mondial **Warzone** avec un cash price de **600 000 $**")
 
     @GBoT.hybrid_command(name = "link", description = "lier son compte twitch a son compte discord.")
     @app_commands.guilds(GUILD)
@@ -652,7 +652,7 @@ if __name__ == "__main__":
             • `/link` : tuto pour lier son compte twitch et discord.\n\
             • `/lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
             • `/planning` : renvois le planning de la journée.\n\
-            • `/pub` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
+            • `/discord` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
             • `/raid` : tuto pour réaliser un raid.\n\
             • `/score` : Obtenir les scores des spartiates pour la journée en cours.\n\
             • `/streamer` : renvois le streamer actuel du créneau horaire.\n\
