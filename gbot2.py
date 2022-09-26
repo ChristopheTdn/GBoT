@@ -1,7 +1,4 @@
 
-from tkinter import HIDDEN
-from typing import Tuple
-from unicodedata import name
 import discord
 from discord.ext import commands,tasks
 from discord.utils import get
@@ -394,9 +391,9 @@ class GBoT(commands.Bot):
         listeSupreme=[]
         message = "\n:medal: __**SPARTS SUPREMES**__\n"
         for spartiate in users:
-                if discord.utils.get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
+                if get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
                     listeSupreme.append(spartiate.display_name)
-                if discord.utils.get(listeRole, name="Spart Suprême") in spartiate.roles:
+                if get(listeRole, name="Spart Suprême") in spartiate.roles:
                     listeSupreme.append(spartiate.display_name)
         for spartSupreme in listeSupreme:
             message +="> • `"+spartSupreme+"`\n"
@@ -488,7 +485,14 @@ class GBoT(commands.Bot):
             if scoreTotal > total :
                 place += 1
             scoreTotal=total
-            message += "> n° "+str(place) +" - `"+membre+"`" + " : **"+ str(total)+" pts**\n"
+            medaille = " "
+            if place == 1:
+                medaille = ":first_place:"
+            elif place == 2:
+                medaille = ":second_place:"
+            elif place == 3:
+                medaille = ":third_place:"
+            message += medaille + " > n° "+str(place) +" - `"+membre+"`" + " : **"+ str(total)+" pts**\n"
 
         self.connexionSQL.close()
         await channel.send(message)  
