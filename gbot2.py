@@ -426,7 +426,7 @@ class GBoT(commands.Bot):
 
     async def distributionRole (self,channel):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
-        # channel = self.get_channel(979869063905939456) # channel prive pour debug
+        # channel = self.get_channel(979857092603162695) # channel annonce
         users = self.get_all_members()
         listeRole= self.get_guild(951887546273640598).roles
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
