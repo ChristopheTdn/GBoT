@@ -426,6 +426,7 @@ class GBoT(commands.Bot):
 
     async def distributionRole (self,channel):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
+        # channel = self.get_channel(979869063905939456) # channel prive pour debug
         users = self.get_all_members()
         listeRole= self.get_guild(951887546273640598).roles
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
@@ -439,24 +440,24 @@ class GBoT(commands.Bot):
         self.connexionSQL.close()
         
         for spartiate in users:
-                if discord.utils.get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
-                    await spartiate.remove_roles(discord.utils.get(listeRole, name="Spart Suprême Modo"))
-                    await spartiate.add_roles(discord.utils.get(listeRole, name="Spartiate"))
+                if get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
+                    await spartiate.remove_roles(get(listeRole, name="Spart Suprême Modo"))
+                    await spartiate.add_roles(get(listeRole, name="Spartiate"))
                     print("on retire ",spartiate.display_name)
-                if discord.utils.get(listeRole, name="Spart Suprême") in spartiate.roles:
-                    await spartiate.remove_roles(discord.utils.get(listeRole, name="Spart Suprême"))
-                    await spartiate.add_roles(discord.utils.get(listeRole, name="Spartiate"))
+                if get(listeRole, name="Spart Suprême") in spartiate.roles:
+                    await spartiate.remove_roles(get(listeRole, name="Spart Suprême"))
+                    await spartiate.add_roles(get(listeRole, name="Spartiate"))
                     print("on retire ",spartiate.display_name)                
                 if spartiate.display_name.lower() in classementSpartiate :
-                    if (discord.utils.get(listeRole, name="Modérateur") in spartiate.roles) or \
-                       (discord.utils.get(listeRole, name="Co-créateur") in spartiate.roles)or \
-                       (discord.utils.get(listeRole, name="Créateur") in spartiate.roles) :
-                        await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême Modo"))
-                        await spartiate.remove_roles(discord.utils.get(listeRole, name="Spartiate")) 
+                    if (get(listeRole, name="Modérateur") in spartiate.roles) or \
+                       (get(listeRole, name="Co-créateur") in spartiate.roles)or \
+                       (get(listeRole, name="Créateur") in spartiate.roles) :
+                        await spartiate.add_roles(get(listeRole, name="Spart Suprême Modo"))
+                        await spartiate.remove_roles(get(listeRole, name="Spartiate")) 
                         print("on ajoute ",spartiate.display_name," comme @Spart Suprême Modo")
                     else:
-                        await spartiate.add_roles(discord.utils.get(listeRole, name="Spart Suprême"))
-                        await spartiate.remove_roles(discord.utils.get(listeRole, name="Spartiate"))
+                        await spartiate.add_roles(get(listeRole, name="Spart Suprême"))
+                        await spartiate.remove_roles(get(listeRole, name="Spartiate"))
                         print("on ajoute ",spartiate.display_name," comme @Spart Suprême")    
 
         # A deplacer vers distribution role apres debug
@@ -465,9 +466,9 @@ class GBoT(commands.Bot):
         listeSupreme=[]
         message = ''
         for spartiate in users:
-                if discord.utils.get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
+                if get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
                     listeSupreme.append(spartiate.id)
-                if discord.utils.get(listeRole, name="Spart Suprême") in spartiate.roles:
+                if get(listeRole, name="Spart Suprême") in spartiate.roles:
                     listeSupreme.append(spartiate.id)
                     
         message =  "\nBonjour à tous, voici les résultats d'attribution des rôles pour cette semaine :\n\n"
@@ -478,7 +479,7 @@ class GBoT(commands.Bot):
         message += "\n\n"
         
         
-        message += ":medal: Le top viewers des Sparts Suprêmes ::medal:\n" 
+        message += ":medal: Le top viewers des Sparts Suprêmes ::medal:\n\n" 
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
@@ -497,7 +498,7 @@ class GBoT(commands.Bot):
                 medaille = ":second_place:"
             elif place == 3:
                 medaille = ":third_place:"
-            message += medaille + " > n° "+str(place) +" - `"+membre+"`" + " : **"+ str(total)+" pts**\n"
+            message += medaille + "  n° "+str(place) +" - `"+membre+"`" + " : **"+ str(total)+" pts**\n"
 
         self.connexionSQL.close()
         await channel.send(message)  
