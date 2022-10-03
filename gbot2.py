@@ -375,6 +375,41 @@ class GBoT(commands.Bot):
                   
         return (reponse1,reponse2)
    
+    def recupereScoreSpartiate(self,auteur):
+        # Recupere les scores pour les afficher une derniere fois
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        cur = self.connexionSQL.cursor()  
+        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        rows = cur.fetchall()
+        self.connexionSQL.close()
+        place = 1
+        scoreTotal = 0
+        resultatMax=10
+        reponse = "**Relevé des scores :**\n\n" 
+        for data in rows :
+            (membre,score,total) = data
+            if membre == auteur.display_name.lower()   :
+                reponse += ">>>  <@"+str(auteur.id)+">" + " : **"+ str(score)+"/"+str(total)+" pts**\n\n"
+        reponse += ":medal: Le top score de la semaine: :medal:\n\n" 
+        for data in rows :
+            (membre,score,total) = data
+            if scoreTotal > total :
+                place += 1
+            scoreTotal=total
+            medaille = " "
+            if place == 1:
+                medaille = ":first_place:"
+            elif place == 2:
+                medaille = ":second_place:"
+            elif place == 3:
+                medaille = ":third_place:"
+            reponse += medaille + "  n° "+str(place) +" - `"+membre+"`" + " : **"+ str(total)+" pts**\n"
+            resultatMax-=1
+            if resultatMax==0: break          
+        return reponse
+   
+   
+   
     async def afficheScore(self,channel):
         
         reponse1,reponse2 = self.recupereScore()
@@ -590,9 +625,9 @@ if __name__ == "__main__":
         await ctx.defer(ephemeral=True)
         await ctx.send(GBoT.recupereSupreme())
 
-    @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des spartiates pour la journée en cours.")
+    @GBoT.hybrid_command(name = "scoregeneral", description = "Obtenir les scores des spartiates pour la journée en cours.")
     @app_commands.guilds(GUILD)
-    async def score(ctx:commands.Context): 
+    async def scoregeneral(ctx:commands.Context): 
         # Commande !score
         reponse1, reponse2 = GBoT.recupereScore()
         await ctx.send('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
@@ -601,6 +636,15 @@ if __name__ == "__main__":
         if reponse2 != "":
             await ctx.send(reponse2)
         await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+
+
+
+    @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des spartiates pour la journée en cours.")
+    @app_commands.guilds(GUILD)
+    async def score(ctx:commands.Context): 
+        # Commande !score
+        await ctx.defer(ephemeral=True)
+        await ctx.send(GBoT.recupereScoreSpartiate(ctx.author))
 
 
     @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.")
