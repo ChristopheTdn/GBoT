@@ -122,11 +122,7 @@ class GBoT(commands.Bot):
         rows = cur.fetchall()
         planning = ""
         streamer = "vide"
-        listeCreneauJour=["09h00 - 10h00 :",
-                        "10h00 - 11h00 :",
-                        "11h00 - 12h00 :",
-                        "12h00 - 13h00 :",
-                        "13h00 - 14h00 :",
+        listeCreneauJour=["13h00 - 14h00 :",
                         "14h00 - 15h00 :",
                         "15h00 - 16h00 :",
                         "16h00 - 17h00 :",
@@ -245,11 +241,7 @@ class GBoT(commands.Bot):
             self.connexionSQL.close()
             
         else:
-            listeCreneau=["09h00 - 10h00 :",
-                    "10h00 - 11h00 :",
-                    "11h00 - 12h00 :",
-                    "12h00 - 13h00 :",
-                    "13h00 - 14h00 :",
+            listeCreneau=["13h00 - 14h00 :",
                     "14h00 - 15h00 :",
                     "15h00 - 16h00 :",
                     "16h00 - 17h00 :",
@@ -290,7 +282,7 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Spartiate
-        if (datetime.now().hour< 1 or datetime.now().hour >=9) and datetime.now().minute == 59 :
+        if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
