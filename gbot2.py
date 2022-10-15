@@ -179,7 +179,7 @@ class GBoT(commands.Bot):
         elif jour==4 : # Vendredi
             channelID = 979856098855120916 
         elif jour==5 : # Samedi
-            channelID = 979856179645796382
+            channelID = 979856179645796382 
             
         if DEBUG=="True" : 
             channelID = 979856098855120916 
