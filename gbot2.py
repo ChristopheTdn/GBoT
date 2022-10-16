@@ -122,17 +122,21 @@ class GBoT(commands.Bot):
         rows = cur.fetchall()
         planning = ""
         streamer = "vide"
-        listeCreneauJour=["13h00 - 14h00 :",
-                        "14h00 - 15h00 :",
-                        "15h00 - 16h00 :",
-                        "16h00 - 17h00 :",
-                        "17h00 - 18h00 :",
-                        "18h00 - 19h00 :",
-                        "19h00 - 20h00 :",
-                        "20h00 - 21h00 :",
-                        "21h00 - 22h00 :",                          
-                        "22h00 - 23h00 :",
-                        "23h00 - 00h00 :"]
+        listeCreneau=["09h00 - 10h00 :",
+                    "10h00 - 11h00 :",
+                    "11h00 - 12h00 :",
+                    "12h00 - 13h00 :",
+                    "13h00 - 14h00 :",
+                    "14h00 - 15h00 :",
+                    "15h00 - 16h00 :",
+                    "16h00 - 17h00 :",
+                    "17h00 - 18h00 :",
+                    "18h00 - 19h00 :",
+                    "19h00 - 20h00 :",
+                    "20h00 - 21h00 :",
+                    "21h00 - 22h00 :",                          
+                    "22h00 - 23h00 :",
+                    "23h00 - 00h00 :"]
         listeCreneauNuit=["00h00 - 01h00 :"]
 
         for creneau in rows :
@@ -238,10 +242,13 @@ class GBoT(commands.Bot):
                 curseur.execute("UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'")
 
             self.connexionSQL.commit()
-            self.connexionSQL.close()
-            
+            self.connexionSQL.close()            
         else:
-            listeCreneau=["13h00 - 14h00 :",
+            listeCreneau=["09h00 - 10h00 :",
+                    "10h00 - 11h00 :",
+                    "11h00 - 12h00 :",
+                    "12h00 - 13h00 :",
+                    "13h00 - 14h00 :",
                     "14h00 - 15h00 :",
                     "15h00 - 16h00 :",
                     "16h00 - 17h00 :",
@@ -282,7 +289,7 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Spartiate
-        if (datetime.now().hour< 1 or datetime.now().hour >=13) and datetime.now().minute == 59 :
+        if (datetime.now().hour< 1 or datetime.now().hour >=9) and datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
@@ -445,6 +452,26 @@ class GBoT(commands.Bot):
             for messageAEffacer in messages :
                 await messageAEffacer.delete()
         
+        if admin and message.content.startswith(">bubzz"):
+            users = self.get_all_members()
+            listeRole= self.get_guild(951887546273640598).roles
+            for spartiate in users:
+                if spartiate.display_name == "BuBzZ_TV":
+                    listeRole= self.get_guild(951887546273640598).roles
+                    role = get(listeRole, name="Spartiate")
+                    await spartiate.add_roles(role)
+                    listeRole= self.get_guild(951887546273640598).roles
+                    role = get(listeRole, name="Spart Suprême Modo")
+                    await spartiate.add_roles(role)
+                    listeRole= self.get_guild(951887546273640598).roles
+                    role = get(listeRole, name="Baby Spart")
+                    await spartiate.remove_roles(role)
+                    listeRole= self.get_guild(951887546273640598).roles
+                    role = get(listeRole, name="New")
+                    await spartiate.remove_roles(role)
+                    print(spartiate.display_name, "ajouté")
+                    
+        
         if message.channel.id  == 979842911002824754: #Channel #Pub
             channelBLABLA = self.get_channel(979857254079676456)
             auteur = str(message.author.id)
@@ -530,7 +557,7 @@ class GBoT(commands.Bot):
         self.connexionSQL.close()
         await channel.send(message)  
         message = "\n\n"
-        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux **48 H** en avance au lieu de 24 H pour les autre Spartiates.\n" 
+        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Spartiates.\n" 
         await channel.send(message) 
 
     def initTableSql(self):
