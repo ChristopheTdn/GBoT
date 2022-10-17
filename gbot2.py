@@ -122,7 +122,7 @@ class GBoT(commands.Bot):
         rows = cur.fetchall()
         planning = ""
         streamer = "vide"
-        listeCreneau=["09h00 - 10h00 :",
+        listeCreneauJour=["09h00 - 10h00 :",
                     "10h00 - 11h00 :",
                     "11h00 - 12h00 :",
                     "12h00 - 13h00 :",
@@ -173,7 +173,7 @@ class GBoT(commands.Bot):
             if jour<0: jour=6
             
         if jour==0 : # Lundi
-            channelID = 979855578144858163
+            channelID = 979855578144858163 
         elif jour==1 : # Mardi
             channelID = 979855690879361035
         elif jour==2 : # Mercredi
@@ -238,8 +238,8 @@ class GBoT(commands.Bot):
                         user= get(self.get_all_members(),id=(int(identity)))                   
                         ligneCut[4] = user.display_name
                     nom_streamer = ligneCut[4] 
-
-                curseur.execute("UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'")
+                sqlreq ="UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'"
+                curseur.execute(sqlreq)
 
             self.connexionSQL.commit()
             self.connexionSQL.close()            
