@@ -362,7 +362,7 @@ class GBoT(commands.Bot):
             (spartiate,score,scoreTotal) = data
             if scoreTotal == None :
                 scoreTotal=score
-            reponse += "• `"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"** *(Cumul Semaine)* \n"
+            reponse += "• `"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"**\n"
 
         if len(reponse)>1980 :
             messageTotal= reponse
