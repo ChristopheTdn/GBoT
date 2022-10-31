@@ -1,6 +1,6 @@
 
 import discord
-from discord.ext import commands,tasks
+from discord.ext import commands
 from discord.utils import get
 from discord import app_commands
 from discord import Embed,Colour
@@ -9,7 +9,7 @@ import logging
 from datetime import datetime,timedelta
 from sessionspartiate import SessionSpartiate
 
-from colorama import init, Fore, Back
+from colorama import Fore, Back
 from dotenv import load_dotenv
 import re 
 import asyncio
@@ -327,9 +327,7 @@ class GBoT(commands.Bot):
                 
             self.connexionSQL.commit()
             self.connexionSQL.close() 
-                
-            reponse2 =""  
-            
+
             if datetime.now().hour < 1: 
                 # Affiche score
                 idChannel = self.recupereIDChannelPresence()                
@@ -371,7 +369,7 @@ class GBoT(commands.Bot):
         else :
             reponse1= reponse
             reponse2 = ""
-                  
+
         return (reponse1,reponse2)
     
     
