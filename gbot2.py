@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands,tasks
 from discord.utils import get
 from discord import app_commands
-
+from discord import Embed,Colour
 import os
 import logging
 from datetime import datetime,timedelta
@@ -375,22 +375,29 @@ class GBoT(commands.Bot):
         return (reponse1,reponse2)
     
     
-    def recupereScoreSpartiate(self,auteur):
+    async def recupereScoreSpartiate(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()  
         cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
         rows = cur.fetchall()
         self.connexionSQL.close()
+        
+        auteur = ctx.author
+        name = auteur.display_name
+        pfp = auteur.display_avatar
+        embed = Embed(title="Relevé des scores",colour= Colour.random())
+        embed.set_author(name=f"{name}",icon_url=auteur.display_icon)
+        embed.set_thumbnail(url=f"{pfp}")
+
         place = 1
         scoreTotal = 0
         resultatMax=10
-        reponse = "**Relevé des scores :**\n\n" 
         for data in rows :
             (membre,score,total) = data
             if membre == auteur.display_name.lower()   :
-                reponse += ">>>  <@"+str(auteur.id)+">" + " : **"+ str(score)+"/"+str(total)+" pts**\n\n"
-        reponse += ":medal: Le top score de la semaine: :medal:\n\n" 
+                embed.add_field(name="votre score **"+ str(score)+"/"+str(total)+" pts**",value="\u200b",  inline = False)
+        reponse = "\u200b"
         for data in rows :
             (membre,score,total) = data
             if scoreTotal > total :
@@ -403,11 +410,12 @@ class GBoT(commands.Bot):
                 medaille = ":second_place:"
             elif place == 3:
                 medaille = ":third_place:"
-            reponse += medaille + "  n° "+str(place) +" - `"+membre+"`" + " : **"+ str(total)+" pts**\n"
+            reponse += medaille + "  n° "+str(place) +" : `"+membre+"` -➤ "+ str(total)+" pts\n" 
             resultatMax-=1
             if resultatMax==0: break          
-        return reponse
+        embed.add_field(name=":medal: Le top score de la semaine: :medal:",value = reponse,inline = False) 
     
+        await ctx.send(embed=embed)
     
     
     async def afficheScore(self,channel):
@@ -662,7 +670,7 @@ if __name__ == "__main__":
     async def score(ctx:commands.Context): 
         # Commande !score
         await ctx.defer(ephemeral=True)
-        await ctx.send(GBoT.recupereScoreSpartiate(ctx.author))
+        await GBoT.recupereScoreSpartiate(ctx)
 
     @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.")
     @app_commands.guilds(GUILD)
@@ -722,7 +730,21 @@ if __name__ == "__main__":
             • `/streamer` : renvois le streamer actuel du créneau horaire.\n\
             • `/supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
             ")
-        
+    @GBoT.hybrid_command(name = "avatar", description = "affiche mon avatar.")
+    @app_commands.guilds(GUILD)
+    async def avatar(ctx:commands.Context): 
+        member = ctx.author
+        name = member.display_name
+        pfp = member.display_avatar
+        embed = Embed(title="voici mon encart perso",colour= Colour.random())
+        embed.set_author(name=f"{name}",icon_url=member.display_icon)
+        embed.set_thumbnail(url=f"{pfp}")
+        embed.add_field(name="votre score", value = "25",inline=True)
+        embed.add_field(name="votre rang", value = "10",inline=True)
+        embed.add_field(name="votre rang", value = "Spart Supreme")
+        embed.set_footer(text = 'Généré par GBoT')
+        await ctx.send(embed=embed)
+            
     GBoT.run(TOKEN)
 
 
