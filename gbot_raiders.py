@@ -15,7 +15,7 @@ import re
 import asyncio
 import sqlite3
 
-description = '''Le GBoT pour le serveur des SPartiates .
+description = '''Le GBoT pour le serveur des Raiders  .
 gere les streamers et leurs viewers en ajoutant quelques commandes sympas.'''
 
 # Parametres 
@@ -43,7 +43,7 @@ load_dotenv(dotenv_path=os.path.join(GBOTPATH,"config"))
 DEBUG = os.getenv("DEBUG")
 TOKEN = os.getenv("TOKEN")
     
-PROD_GUILD = discord.Object(951887546273640598)
+PROD_GUILD = discord.Object(1037338719780339752)
 TEST_GUILD = None
 
 if DEBUG == "True":
@@ -173,47 +173,23 @@ class GBoT(commands.Bot):
             if jour<0: jour=6
             
         if jour==0 : # Lundi
-            channelID = 979855578144858163 
+            channelID = 1037341064018796604
         elif jour==1 : # Mardi
-            channelID = 979855690879361035
+            channelID = 1037341103747256361
         elif jour==2 : # Mercredi
-            channelID = 979855775193264128 
+            channelID = 1037341153466536037
         elif jour==3 : # Jeudi
-            channelID = 979855851340857414
+            channelID = 1037341185569730561
         elif jour==4 : # Vendredi
-            channelID = 979856098855120916 
+            channelID = 1037341222341202020
         elif jour==5 : # Samedi
-            channelID = 979856179645796382 
-            
-        if DEBUG=="True" : 
-            channelID = 979856098855120916 
+            channelID = 1037341259657920512
+
             
         return channelID
 
     def recupereIDChannelPresence(self):
-        channelID = 0
-        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if (datetime.now().hour<1):
-            jour-=1  
-            if jour<0:
-                jour=6
-            
-        if jour==0 : # Lundi
-            channelID = 1000820139480055938
-        elif jour==1 : # Mardi
-            channelID = 1008377391690817546
-        elif jour==2 : # Mercredi
-            channelID = 1008377475832750151
-        elif jour==3 : # Jeudi
-            channelID = 1008377565708292116
-        elif jour==4 : # Vendredi
-            channelID = 1005912896011784275 
-        elif jour==5 : #Samedi
-            channelID = 1017408836878995486
-        
-        if DEBUG=="True" : 
-            channelID = 1005912896011784275
-            
+        channelID = 1037347680965365791 #presence     
         return channelID
 
     async def recuperePlanning(self):
@@ -344,7 +320,7 @@ class GBoT(commands.Bot):
                 self.connexionSQL.close()
                         
             if datetime.now().hour < 1 and datetime.now().weekday()==6 : 
-                await self.distributionRole(self.get_channel(979857092603162695)) 
+                await self.distributionRole(self.get_channel(1037341418722705468)) #annonce
     
     def recupereScore(self):
         # Recupere les scores pour les afficher une derniere fois
@@ -428,7 +404,7 @@ class GBoT(commands.Bot):
 
     def recupereSupreme(self):
         users = self.get_all_members()
-        listeRole= self.get_guild(951887546273640598).roles
+        listeRole= self.get_guild(PROD_GUILD).roles
         listeSupreme=[]
         message = "\n:medal: __**SPARTS SUPREMES**__\n"
         for spartiate in users:
@@ -459,37 +435,19 @@ class GBoT(commands.Bot):
             for messageAEffacer in messages :
                 await messageAEffacer.delete()
         
-        if admin and message.content.startswith(">bubzz"):
-            users = self.get_all_members()
-            listeRole= self.get_guild(951887546273640598).roles
-            for spartiate in users:
-                if spartiate.display_name == "BuBzZ_TV":
-                    listeRole= self.get_guild(951887546273640598).roles
-                    role = get(listeRole, name="Spartiate")
-                    await spartiate.add_roles(role)
-                    listeRole= self.get_guild(951887546273640598).roles
-                    role = get(listeRole, name="Spart Suprême Modo")
-                    await spartiate.add_roles(role)
-                    listeRole= self.get_guild(951887546273640598).roles
-                    role = get(listeRole, name="Baby Spart")
-                    await spartiate.remove_roles(role)
-                    listeRole= self.get_guild(951887546273640598).roles
-                    role = get(listeRole, name="New")
-                    await spartiate.remove_roles(role)
-                    print(spartiate.display_name, "ajouté")
                     
         
-        if message.channel.id  == 979842911002824754: #Channel #Pub
-            channelBLABLA = self.get_channel(979857254079676456)
+        if message.channel.id  == 1037345800281395341: #Channel #Pub
+            channelBLABLA = self.get_channel(1037341465099120672)
             auteur = str(message.author.id)
-            await channelBLABLA.send("<@"+auteur+"> attire votre attention et requiert votre aide dans le channel <#979842911002824754>. Spartiates !!! Apportez lui votre soutien !")
+            await channelBLABLA.send("<@"+auteur+"> attire votre attention et requiert votre aide dans le channel <#1037345800281395341>. Raiders !!! Apportez lui votre soutien !")
             
 
     async def distributionRole (self,channel):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
         # channel = self.get_channel(979857092603162695) # channel annonce
         users = self.get_all_members()
-        listeRole= self.get_guild(951887546273640598).roles
+        listeRole= self.get_guild(PROD_GUILD).roles
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
