@@ -7,7 +7,7 @@ from discord import Embed,Colour
 import os
 import logging
 from datetime import datetime,timedelta
-from sessionspartiate import SessionSpartiate
+from session_raiders import SessionRaiders
 
 from colorama import Fore, Back
 from dotenv import load_dotenv
@@ -68,16 +68,16 @@ class GBoT(commands.Bot):
     async def setup_hook(self) -> None:
         await self.tree.sync(guild=GUILD)
         # create the background task and run it in the background
-        self.bg_task_EnregistreSpartiate = self.loop.create_task(self.EnchaineProcedure(60))
-        self.bg_task_SessionSpartiate = self.loop.create_task(self.appelSessionSpartiate(240))
+        self.bg_task_EnregistreRaiders = self.loop.create_task(self.EnchaineProcedure(60))
+        self.bg_task_SessionRaiders = self.loop.create_task(self.appelSessionRaiders(240))
 
     async def EnchaineProcedure(self, timing):
         
         await self.wait_until_ready()
         while not self.is_closed():
             
-            # ENREGISTRE SPARTIATE
-            self.enregistreSpartiate()
+            # ENREGISTRE RAIDERS
+            self.enregistreRaiders()
             
             # RECUPERE PLANNING               
             await self.recuperePlanning()   
@@ -94,16 +94,16 @@ class GBoT(commands.Bot):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    async def appelSessionSpartiate(self,timing_sessionSpartiate):
+    async def appelSessionRaiders(self,timing_sessionRaiders):
         await self.wait_until_ready()
         while not self.is_closed():
-            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate START')
-            bob=SessionSpartiate()
-            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session spartiate FIN\n')
-            await asyncio.sleep(timing_sessionSpartiate) 
+            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session raiders START')
+            bob=SessionRaiders()
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session raiders FIN\n')
+            await asyncio.sleep(timing_sessionRaiders) 
 
-    def enregistreSpartiate(self):
-        with open(os.path.join(GBOTPATH,"spartiates.txt"), "w") as fichier:
+    def enregistreRaiders(self):
+        with open(os.path.join(GBOTPATH,"raiders.txt"), "w") as fichier:
             for member in self.get_all_members():
                 if not member.bot :
                         fichier.write(member.display_name.lower()+"\n")
@@ -245,7 +245,7 @@ class GBoT(commands.Bot):
                
     async def envoisMessage(self):
         # minute 1    
-        #Envois message horaire Streamer en ligne Spartiate  
+        #Envois message horaire Streamer en ligne Raiders  
         if datetime.now().minute == 1 : 
             with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
                 streamer = fichier.read()
@@ -260,11 +260,11 @@ class GBoT(commands.Bot):
                 reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
                 await channel.send("Donnez de la force à "+reponse)
             else :
-                reponse = "**`Il n y a pas de Raid Spartiate Actuellement**"
+                reponse = "**`Il n y a pas de Raid Actuellement**"
                 await channel.send(reponse)
                     
             # minute 58
-            #Envois message horaire presence Spartiate
+            #Envois message horaire presence RAIDERS
         if (datetime.now().hour< 1 or datetime.now().hour >=9) and datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
@@ -285,11 +285,11 @@ class GBoT(commands.Bot):
                 if chatter !="" :
                     reponse += "`"+chatter+"`\n"
                     flagTrouve = False
-                    for spartiate in rows :
-                        if spartiate[1] == chatter :
-                            score = spartiate[2] + 1
-                            if spartiate[3] != None :
-                                scoreTotal = spartiate[3] + 1
+                    for raider in rows :
+                        if raider[1] == chatter :
+                            score = raider[2] + 1
+                            if raider[3] != None :
+                                scoreTotal = raider[3] + 1
                             else:
                                 scoreTotal = score
                             flagTrouve = True
@@ -314,8 +314,8 @@ class GBoT(commands.Bot):
                 cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                 rows = cur.fetchall()
                 for data in rows :
-                    (spartiate,score,total) = data
-                    cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+spartiate+"'")        
+                    (raider,score,total) = data
+                    cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+raider+"'")        
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
                         
@@ -333,10 +333,10 @@ class GBoT(commands.Bot):
         reponse = ""
         
         for data in rows :
-            (spartiate,score,scoreTotal) = data
+            (raider,score,scoreTotal) = data
             if scoreTotal == None :
                 scoreTotal=score
-            reponse += "• `"+spartiate+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"**\n"
+            reponse += "• `"+raider+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"**\n"
 
         if len(reponse)>1980 :
             messageTotal= reponse
@@ -349,7 +349,7 @@ class GBoT(commands.Bot):
         return (reponse1,reponse2)
     
     
-    async def recupereScoreSpartiate(self,ctx):
+    async def recupereScoreRaiders(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()  
@@ -396,7 +396,7 @@ class GBoT(commands.Bot):
         
         reponse1,reponse2 = self.recupereScore()
 
-        await channel.send('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+        await channel.send('\n:medal: __**Score des RAIDERS présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
         await channel.send(reponse1)
         if reponse2 != "":
             await channel.send(reponse2)
@@ -407,13 +407,13 @@ class GBoT(commands.Bot):
         listeRole= self.get_guild(PROD_GUILD).roles
         listeSupreme=[]
         message = "\n:medal: __**SPARTS SUPREMES**__\n"
-        for spartiate in users:
-                if get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
-                    listeSupreme.append(spartiate.display_name)
-                if get(listeRole, name="Spart Suprême") in spartiate.roles:
-                    listeSupreme.append(spartiate.display_name)
-        for spartSupreme in listeSupreme:
-            message +="> • `"+spartSupreme+"`\n"
+        for raider in users:
+                if get(listeRole, name="Spart Suprême Modo") in raider.roles:
+                    listeSupreme.append(raider.display_name)
+                if get(listeRole, name="Spart Suprême") in raider.roles:
+                    listeSupreme.append(raider.display_name)
+        for raiderSupreme in listeSupreme:
+            message +="> • `"+raiderSupreme+"`\n"
         return message
                     
     async def afficheSupreme(self,channel):
@@ -452,49 +452,49 @@ class GBoT(commands.Bot):
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
-        classementSpartiate ={}
+        classementRaiders ={}
         for data in rows :
-            (spartiate,score,total) = data
-            classementSpartiate[spartiate]=total
+            (raider,score,total) = data
+            classementRaiders[raider]=total
         self.connexionSQL.close()
         
-        for spartiate in users:
-                if get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
-                    await spartiate.remove_roles(get(listeRole, name="Spart Suprême Modo"))
-                    await spartiate.add_roles(get(listeRole, name="Spartiate"))
-                    print("on retire ",spartiate.display_name)
-                if get(listeRole, name="Spart Suprême") in spartiate.roles:
-                    await spartiate.remove_roles(get(listeRole, name="Spart Suprême"))
-                    await spartiate.add_roles(get(listeRole, name="Spartiate"))
-                    print("on retire ",spartiate.display_name)                
-                if spartiate.display_name.lower() in classementSpartiate :
-                    if (get(listeRole, name="Modérateur") in spartiate.roles) or \
-                       (get(listeRole, name="Co-créateur") in spartiate.roles)or \
-                       (get(listeRole, name="Créateur") in spartiate.roles) :
-                        await spartiate.add_roles(get(listeRole, name="Spart Suprême Modo"))
-                        await spartiate.remove_roles(get(listeRole, name="Spartiate")) 
-                        print("on ajoute ",spartiate.display_name," comme @Spart Suprême Modo")
+        for raider in users:
+                if get(listeRole, name="Spart Suprême Modo") in raider.roles:
+                    await raider.remove_roles(get(listeRole, name="Spart Suprême Modo"))
+                    await raider.add_roles(get(listeRole, name="Spartiate"))
+                    print("on retire ",raider.display_name)
+                if get(listeRole, name="Spart Suprême") in raider.roles:
+                    await raider.remove_roles(get(listeRole, name="Spart Suprême"))
+                    await raider.add_roles(get(listeRole, name="Spartiate"))
+                    print("on retire ",raider.display_name)                
+                if raider.display_name.lower() in classementRaiders :
+                    if (get(listeRole, name="Modérateur") in raider.roles) or \
+                       (get(listeRole, name="Co-créateur") in raider.roles)or \
+                       (get(listeRole, name="Créateur") in raider.roles) :
+                        await raider.add_roles(get(listeRole, name="Spart Suprême Modo"))
+                        await raider.remove_roles(get(listeRole, name="Spartiate")) 
+                        print("on ajoute ",raider.display_name," comme @Spart Suprême Modo")
                     else:
-                        await spartiate.add_roles(get(listeRole, name="Spart Suprême"))
-                        await spartiate.remove_roles(get(listeRole, name="Spartiate"))
-                        print("on ajoute ",spartiate.display_name," comme @Spart Suprême")    
+                        await raider.add_roles(get(listeRole, name="Spart Suprême"))
+                        await raider.remove_roles(get(listeRole, name="Spartiate"))
+                        print("on ajoute ",raider.display_name," comme @Spart Suprême")    
 
         # A deplacer vers distribution role apres debug
         users = self.get_all_members()
         listeRole= self.get_guild(951887546273640598).roles
         listeSupreme=[]
         message = ''
-        for spartiate in users:
-                if get(listeRole, name="Spart Suprême Modo") in spartiate.roles:
-                    listeSupreme.append(spartiate.id)
-                if get(listeRole, name="Spart Suprême") in spartiate.roles:
-                    listeSupreme.append(spartiate.id)
+        for raider in users:
+                if get(listeRole, name="Spart Suprême Modo") in raider.roles:
+                    listeSupreme.append(raider.id)
+                if get(listeRole, name="Spart Suprême") in raider.roles:
+                    listeSupreme.append(raider.id)
                     
         message =  "\nBonjour à tous, voici les résultats d'attribution des rôles pour cette semaine :\n\n"
         message += ":yellow_circle: Les <@&951980979327762492> sont :\n"
         message +="   >" 
-        for spartSupreme in listeSupreme:
-            message +=" • <@"+str(spartSupreme)+">"
+        for raiderSupreme in listeSupreme:
+            message +=" • <@"+str(raiderSupreme)+">"
         message += "\n\n"
         
         
@@ -522,7 +522,7 @@ class GBoT(commands.Bot):
         self.connexionSQL.close()
         await channel.send(message)  
         message = "\n\n"
-        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Spartiates.\n" 
+        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Raiders.\n" 
         await channel.send(message) 
 
     def initTableSql(self):
@@ -572,7 +572,7 @@ if __name__ == "__main__":
 
     GBoT = GBoT()
 
-    @GBoT.hybrid_command(name = "lurk", description = "Renvois la liste des spartiates présents sur le creneau en cours.")
+    @GBoT.hybrid_command(name = "lurk", description = "Renvois la liste des RAIDERS présents sur le creneau en cours.")
     @app_commands.guilds(GUILD)
     async def lurk(ctx:commands.Context):
         with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier :
@@ -609,34 +609,34 @@ if __name__ == "__main__":
         await ctx.defer(ephemeral=True)
         await ctx.send(GBoT.recupereSupreme())
 
-    @GBoT.hybrid_command(name = "scoregeneral", description = "Obtenir les scores des spartiates pour la journée en cours.")
+    @GBoT.hybrid_command(name = "scoregeneral", description = "Obtenir les scores des raiders pour la journée en cours.")
     @app_commands.guilds(GUILD)
     async def scoregeneral(ctx:commands.Context):
         # Commande !score
         reponse1, reponse2 = GBoT.recupereScore()
-        await ctx.send('\n:medal: __**Score des SPARTIATES présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+        await ctx.send('\n:medal: __**Score des RAIDERS présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
         if reponse1 != "":
             await ctx.send(reponse1)
         if reponse2 != "":
             await ctx.send(reponse2)
         await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
 
-    @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des spartiates pour la journée en cours.")
+    @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des RAIDERS pour la journée en cours.")
     @app_commands.guilds(GUILD)
     async def score(ctx:commands.Context): 
         # Commande !score
         await ctx.defer(ephemeral=True)
-        await GBoT.recupereScoreSpartiate(ctx)
+        await GBoT.recupereScoreRaiders(ctx)
 
-    @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.")
+    @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord RAIDERS.")
     @app_commands.guilds(GUILD)
     async def discord(ctx:commands.Context):  
         # Commande !discord
         await ctx.send("Bonjour à toi jeune streamer/streameuse,\
-    tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"Spartiates Entraide Twitch\"**__ est là pour te donner un coup de pouce.\n\
+    tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"RAIDERS Entraide Twitch\"**__ est là pour te donner un coup de pouce.\n\
     \nLe principe est simple, il y a plusieurs horaires sous forme de créneaux disponibles du lundi au vendredi, il suffit simplement de t'inscrire à l'un d'entre eux pour recevoir un raid et voir ton nombre de viewers grimper en flèche et ton tchat se déchaîner.\n\
     \nÉvidemment, l'entraide est le mot d'ordre, alors on compte également sur toi pour faire parti(e) de la chaîne des raids et être présent(e) sur les streams des autres personnes qui adhèrent à ce projet.\n\
-    \nAllez n'attend pas plus longtemps et deviens toi aussi un Spartiate en rejoignant ce serveur ici : https://discord.gg/SzDnhgEWrn )\n")
+    \nAllez n'attend pas plus longtemps et deviens toi aussi un RAIDER en rejoignant ce serveur ici : https://discord.gg/SzDnhgEWrn )\n")
 
     @GBoT.hybrid_command(name = "raid", description = "tuto pour réaliser un raid.")
     @app_commands.guilds(GUILD)
@@ -678,11 +678,11 @@ if __name__ == "__main__":
         await ctx.send("**Commande GBoT :**\n\
             • `/aide` : Les commandes du GBoT.\n\
             • `/link` : tuto pour lier son compte twitch et discord.\n\
-            • `/lurk` : renvois la liste des spartiates qui visualisent le stream en cours.\n\
+            • `/lurk` : renvois la liste des RAIDERS qui visualisent le stream en cours.\n\
             • `/planning` : renvois le planning de la journée.\n\
-            • `/discord` : Obtenir le lien à diffuser pour rejoindre le discord SPARTIATES.\n\
+            • `/discord` : Obtenir le lien à diffuser pour rejoindre le discord RAIDERS.\n\
             • `/raid` : tuto pour réaliser un raid.\n\
-            • `/score` : Obtenir les scores des spartiates pour la journée en cours.\n\
+            • `/score` : Obtenir les scores des RAIDERS pour la journée en cours.\n\
             • `/streamer` : renvois le streamer actuel du créneau horaire.\n\
             • `/supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
             ")

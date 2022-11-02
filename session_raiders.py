@@ -22,7 +22,7 @@ BBLUE = Back.BLUE
 
 GBOTPATH, filename = os.path.split(__file__)
 
-class SessionSpartiate:
+class SessionRaiders:
 
         def __init__(self):
             '''
@@ -36,7 +36,7 @@ class SessionSpartiate:
                     _listeSpartiateDejaPresent = self.ObtenirSpartiateDejaPresent(_creneauHoraire)
                     self.ListeChatterEnLigne(_streamer.lower(), _creneauHoraire,_listeSpartiateDejaPresent)
                 else :
-                    print("Absence de streamer dans streamer.txt > Pas de session spartiate valide")
+                    print("Absence de streamer dans streamer.txt > Pas de session Raiders valide")
             else :
                 print(BYELLOW+BLACK+"Hors créneau :"+BBLACK+WHITE+"Il est "+RED+datetime.now().strftime("%Hh%M") +WHITE+" Les créneaux horaires ne sont pas atteint. patientez...")
 
@@ -86,7 +86,7 @@ class SessionSpartiate:
             Renvois la liste des Spartiates en lignes
             '''
             # Recupere la liste des SPARTIATES
-            fichierLocal = open(os.path.join(GBOTPATH,"spartiates.txt"),"r")
+            fichierLocal = open(os.path.join(GBOTPATH,"raiders.txt"),"r")
             listeSpartiate =  fichierLocal.read().split("\n")
             listeSpartiate =  [x.lower() for x in listeSpartiate]
             fichierLocal.close
