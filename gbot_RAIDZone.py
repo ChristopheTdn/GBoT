@@ -7,7 +7,7 @@ from discord import Embed,Colour
 import os
 import logging
 from datetime import datetime,timedelta
-from session_raiders import SessionRaiders
+from session_Membres import SessionMembres
 
 from colorama import Fore, Back
 from dotenv import load_dotenv
@@ -15,7 +15,7 @@ import re
 import asyncio
 import sqlite3
 
-description = '''Le GBoT pour le serveur des Raiders  .
+description = '''Le GBoT pour le serveur RAIDZone  .
 gere les streamers et leurs viewers en ajoutant quelques commandes sympas.'''
 
 # Parametres 
@@ -68,16 +68,16 @@ class GBoT(commands.Bot):
     async def setup_hook(self) -> None:
         await self.tree.sync(guild=GUILD)
         # create the background task and run it in the background
-        self.bg_task_EnregistreRaiders = self.loop.create_task(self.EnchaineProcedure(60))
-        self.bg_task_SessionRaiders = self.loop.create_task(self.appelSessionRaiders(240))
+        self.bg_task_EnregistreMembres = self.loop.create_task(self.EnchaineProcedure(60))
+        self.bg_task_SessionMembres = self.loop.create_task(self.appelSessionMembres(240))
 
     async def EnchaineProcedure(self, timing):
         
         await self.wait_until_ready()
         while not self.is_closed():
             
-            # ENREGISTRE RAIDERS
-            self.enregistreRaiders()
+            # ENREGISTRE Membres
+            self.enregistreMembres()
             
             # RECUPERE PLANNING               
             await self.recuperePlanning()   
@@ -94,16 +94,16 @@ class GBoT(commands.Bot):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    async def appelSessionRaiders(self,timing_sessionRaiders):
+    async def appelSessionMembres(self,timing_sessionMembres):
         await self.wait_until_ready()
         while not self.is_closed():
-            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session raiders START')
-            bob=SessionRaiders()
-            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session raiders FIN\n')
-            await asyncio.sleep(timing_sessionRaiders) 
+            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session Membres START')
+            bob=SessionMembres()
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session Membres FIN\n')
+            await asyncio.sleep(timing_sessionMembres) 
 
-    def enregistreRaiders(self):
-        with open(os.path.join(GBOTPATH,"raiders.txt"), "w") as fichier:
+    def enregistreMembres(self):
+        with open(os.path.join(GBOTPATH,"Membres.txt"), "w") as fichier:
             for member in self.get_all_members():
                 if not member.bot :
                         fichier.write(member.display_name.lower()+"\n")
@@ -245,7 +245,7 @@ class GBoT(commands.Bot):
                
     async def envoisMessage(self):
         # minute 1    
-        #Envois message horaire Streamer en ligne Raiders  
+        #Envois message horaire Streamer en ligne Membres  
         if datetime.now().minute == 1 : 
             with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
                 streamer = fichier.read()
@@ -264,7 +264,7 @@ class GBoT(commands.Bot):
                 await channel.send(reponse)
                     
             # minute 58
-            #Envois message horaire presence RAIDERS
+            #Envois message horaire presence Membres
         if (datetime.now().hour< 1 or datetime.now().hour >=9) and datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
@@ -276,7 +276,7 @@ class GBoT(commands.Bot):
                 
             self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
             cur = self.connexionSQL.cursor()
-            cur.execute("SELECT * FROM 'Spartiate'")
+            cur.execute("SELECT * FROM 'Membre'")
             rows = cur.fetchall()                
             chatters = chatters.split("\n") 
             reponse =  "**"+chatters[0]+"**\n"              
@@ -285,19 +285,19 @@ class GBoT(commands.Bot):
                 if chatter !="" :
                     reponse += "`"+chatter+"`\n"
                     flagTrouve = False
-                    for raider in rows :
-                        if raider[1] == chatter :
-                            score = raider[2] + 1
-                            if raider[3] != None :
-                                scoreTotal = raider[3] + 1
+                    for Membre in rows :
+                        if Membre[1] == chatter :
+                            score = Membre[2] + 1
+                            if Membre[3] != None :
+                                scoreTotal = Membre[3] + 1
                             else:
                                 scoreTotal = score
                             flagTrouve = True
-                            cur.execute("UPDATE Spartiate SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
+                            cur.execute("UPDATE Membre SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
                                 
                         if flagTrouve == False :
                             if chatter != "vide" :
-                                cur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
+                                cur.execute('''INSERT OR REPLACE INTO Membre(pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
 
             await channel.send(reponse)
                 
@@ -311,11 +311,11 @@ class GBoT(commands.Bot):
                 # Remet les score de la journée a 0
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
                 cur = self.connexionSQL.cursor()
-                cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE score>0 ORDER BY total DESC, pseudo ASC")
+                cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                 rows = cur.fetchall()
                 for data in rows :
-                    (raider,score,total) = data
-                    cur.execute("UPDATE Spartiate SET score = 0 WHERE pseudo  = '"+raider+"'")        
+                    (Membre,score,total) = data
+                    cur.execute("UPDATE Membre SET score = 0 WHERE pseudo  = '"+Membre+"'")        
                 self.connexionSQL.commit()
                 self.connexionSQL.close()
                         
@@ -326,17 +326,17 @@ class GBoT(commands.Bot):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()  
-        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
         rows = cur.fetchall()
         self.connexionSQL.close()
         
         reponse = ""
         
         for data in rows :
-            (raider,score,scoreTotal) = data
+            (Membre,score,scoreTotal) = data
             if scoreTotal == None :
                 scoreTotal=score
-            reponse += "• `"+raider+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"**\n"
+            reponse += "• `"+Membre+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"**\n"
 
         if len(reponse)>1980 :
             messageTotal= reponse
@@ -349,11 +349,11 @@ class GBoT(commands.Bot):
         return (reponse1,reponse2)
     
     
-    async def recupereScoreRaiders(self,ctx):
+    async def recupereScoreMembres(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()  
-        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
         rows = cur.fetchall()
         self.connexionSQL.close()
         
@@ -396,28 +396,26 @@ class GBoT(commands.Bot):
         
         reponse1,reponse2 = self.recupereScore()
 
-        await channel.send('\n:medal: __**Score des RAIDERS présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+        await channel.send('\n:medal: __**Score des Membres présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
         await channel.send(reponse1)
         if reponse2 != "":
             await channel.send(reponse2)
-        await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+        await channel.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **VIP** pour la semaine suivante.*\n\n")
 
-    def recupereSupreme(self):
+    def recupereVIP(self):
         users = self.get_all_members()
-        listeRole= self.get_guild(PROD_GUILD).roles
-        listeSupreme=[]
-        message = "\n:medal: __**SPARTS SUPREMES**__\n"
-        for raider in users:
-                if get(listeRole, name="Spart Suprême Modo") in raider.roles:
-                    listeSupreme.append(raider.display_name)
-                if get(listeRole, name="Spart Suprême") in raider.roles:
-                    listeSupreme.append(raider.display_name)
-        for raiderSupreme in listeSupreme:
-            message +="> • `"+raiderSupreme+"`\n"
+        listeRole= self.get_guild(GUILD).roles
+        listeVIP=[]
+        message = "\n:medal: __**V.I.P**__\n"
+        for membre in users:
+                if get(listeRole, name="VIP") in membre.roles:
+                    listeVIP.append(membre.display_name)
+        for VIP in listeVIP:
+            message +="> • `"+VIP+"`\n"
         return message
                     
-    async def afficheSupreme(self,channel):
-        await channel.send(self.recupereSupreme())
+    async def afficheVIP(self,channel):
+        await channel.send(self.recupereVIP())
         
     async def on_message(self, message):
 
@@ -440,68 +438,54 @@ class GBoT(commands.Bot):
         if message.channel.id  == 1037345800281395341: #Channel #Pub
             channelBLABLA = self.get_channel(1037341465099120672)
             auteur = str(message.author.id)
-            await channelBLABLA.send("<@"+auteur+"> attire votre attention et requiert votre aide dans le channel <#1037345800281395341>. Raiders !!! Apportez lui votre soutien !")
+            await channelBLABLA.send("<@"+auteur+"> attire votre attention et requiert votre aide dans le channel <#1037345800281395341>. Membres !!! Apportez lui votre soutien !")
             
 
     async def distributionRole (self,channel):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
         # channel = self.get_channel(979857092603162695) # channel annonce
         users = self.get_all_members()
-        listeRole= self.get_guild(PROD_GUILD).roles
+        listeRole= self.get_guild(GUILD).roles
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()
-        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
-        classementRaiders ={}
+        classementMembres ={}
         for data in rows :
-            (raider,score,total) = data
-            classementRaiders[raider]=total
+            (membre,score,total) = data
+            classementMembres[membre]=total
         self.connexionSQL.close()
         
-        for raider in users:
-                if get(listeRole, name="Spart Suprême Modo") in raider.roles:
-                    await raider.remove_roles(get(listeRole, name="Spart Suprême Modo"))
-                    await raider.add_roles(get(listeRole, name="Spartiate"))
-                    print("on retire ",raider.display_name)
-                if get(listeRole, name="Spart Suprême") in raider.roles:
-                    await raider.remove_roles(get(listeRole, name="Spart Suprême"))
-                    await raider.add_roles(get(listeRole, name="Spartiate"))
-                    print("on retire ",raider.display_name)                
-                if raider.display_name.lower() in classementRaiders :
-                    if (get(listeRole, name="Modérateur") in raider.roles) or \
-                       (get(listeRole, name="Co-créateur") in raider.roles)or \
-                       (get(listeRole, name="Créateur") in raider.roles) :
-                        await raider.add_roles(get(listeRole, name="Spart Suprême Modo"))
-                        await raider.remove_roles(get(listeRole, name="Spartiate")) 
-                        print("on ajoute ",raider.display_name," comme @Spart Suprême Modo")
-                    else:
-                        await raider.add_roles(get(listeRole, name="Spart Suprême"))
-                        await raider.remove_roles(get(listeRole, name="Spartiate"))
-                        print("on ajoute ",raider.display_name," comme @Spart Suprême")    
+        for membre in users:
+                if get(listeRole, name="VIP") in membre.roles:
+                    await membre.remove_roles(get(listeRole, name="VIP"))
+                    print("on retire ",Membre.display_name)
+             
+                if Membre.display_name.lower() in classementMembres :                    
+                        await Membre.add_roles(get(listeRole, name="VIP"))
+                        print("on ajoute ",Membre.display_name," comme VIP")    
 
         # A deplacer vers distribution role apres debug
         users = self.get_all_members()
-        listeRole= self.get_guild(951887546273640598).roles
-        listeSupreme=[]
+        listeRole= self.get_guild(GUILD).roles
+        listeVIP=[]
         message = ''
-        for raider in users:
-                if get(listeRole, name="Spart Suprême Modo") in raider.roles:
-                    listeSupreme.append(raider.id)
-                if get(listeRole, name="Spart Suprême") in raider.roles:
-                    listeSupreme.append(raider.id)
+        for Membre in users:
+                if get(listeRole, name="VIP") in Membre.roles:
+                    listeVIP.append(Membre.id)
                     
         message =  "\nBonjour à tous, voici les résultats d'attribution des rôles pour cette semaine :\n\n"
-        message += ":yellow_circle: Les <@&951980979327762492> sont :\n"
+        message += ":yellow_circle: Les <@&1037343347905409116> sont :\n"
         message +="   >" 
-        for raiderSupreme in listeSupreme:
-            message +=" • <@"+str(raiderSupreme)+">"
+        for VIP in listeVIP:
+            message +=" • <@"+str(VIP)+">"
         message += "\n\n"
         
         
         message += ":medal: Le top viewers des Sparts Suprêmes ::medal:\n\n" 
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
         cur = self.connexionSQL.cursor()
-        cur.execute("SELECT pseudo,score,total FROM 'Spartiate' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
         place = 1
         scoreTotal = 0
@@ -522,7 +506,7 @@ class GBoT(commands.Bot):
         self.connexionSQL.close()
         await channel.send(message)  
         message = "\n\n"
-        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Raiders.\n" 
+        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Membres.\n" 
         await channel.send(message) 
 
     def initTableSql(self):
@@ -534,7 +518,7 @@ class GBoT(commands.Bot):
             streamer TEXT,
             UNIQUE(planning)
             )''')
-        curseur.execute('''CREATE TABLE IF NOT EXISTS Spartiate(
+        curseur.execute('''CREATE TABLE IF NOT EXISTS Membre(
             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
             pseudo TEXT UNIQUE,
             score INTEGER,
@@ -564,7 +548,7 @@ class GBoT(commands.Bot):
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("21h00 - 22h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("22h00 - 23h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("23h00 - 00h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO Spartiate (pseudo, score,total) VALUES (?,?,?)''', ("none",0,0))
+        curseur.execute('''INSERT OR REPLACE INTO Membre (pseudo, score,total) VALUES (?,?,?)''', ("none",0,0))
         self.connexionSQL.commit()
         self.connexionSQL.close()
 
@@ -572,7 +556,7 @@ if __name__ == "__main__":
 
     GBoT = GBoT()
 
-    @GBoT.hybrid_command(name = "lurk", description = "Renvois la liste des RAIDERS présents sur le creneau en cours.")
+    @GBoT.hybrid_command(name = "lurk", description = "Renvois la liste des Membres présents sur le creneau en cours.")
     @app_commands.guilds(GUILD)
     async def lurk(ctx:commands.Context):
         with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier :
@@ -602,41 +586,41 @@ if __name__ == "__main__":
         #await ctx.defer(ephemeral=True)
         await ctx.send("Actuellement le nom du Streamer est : "+reponse)
         
-    @GBoT.hybrid_command(name = "supreme", description = "renvois la liste des Sparts Supremes.")
+    @GBoT.hybrid_command(name = "VIP", description = "renvois la liste des VIPs.")
     @app_commands.guilds(GUILD)
     async def supreme(ctx:commands.Context):        
         # Commande !supreme
         await ctx.defer(ephemeral=True)
-        await ctx.send(GBoT.recupereSupreme())
+        await ctx.send(GBoT.recupereVIP())
 
-    @GBoT.hybrid_command(name = "scoregeneral", description = "Obtenir les scores des raiders pour la journée en cours.")
+    @GBoT.hybrid_command(name = "scoregeneral", description = "Obtenir les scores des Membres pour la journée en cours.")
     @app_commands.guilds(GUILD)
     async def scoregeneral(ctx:commands.Context):
         # Commande !score
         reponse1, reponse2 = GBoT.recupereScore()
-        await ctx.send('\n:medal: __**Score des RAIDERS présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+        await ctx.send('\n:medal: __**Score des Membres présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
         if reponse1 != "":
             await ctx.send(reponse1)
         if reponse2 != "":
             await ctx.send(reponse2)
-        await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **Sparte Suprême** pour la semaine suivante.*\n\n")
+        await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **VIP** pour la semaine suivante.*\n\n")
 
-    @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des RAIDERS pour la journée en cours.")
+    @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des Membres pour la journée en cours.")
     @app_commands.guilds(GUILD)
     async def score(ctx:commands.Context): 
         # Commande !score
         await ctx.defer(ephemeral=True)
-        await GBoT.recupereScoreRaiders(ctx)
+        await GBoT.recupereScoreMembres(ctx)
 
-    @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord RAIDERS.")
+    @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord RAIDZone.")
     @app_commands.guilds(GUILD)
     async def discord(ctx:commands.Context):  
         # Commande !discord
         await ctx.send("Bonjour à toi jeune streamer/streameuse,\
-    tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"RAIDERS Entraide Twitch\"**__ est là pour te donner un coup de pouce.\n\
+    tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"RAIDZone\"**__ est là pour te donner un coup de pouce.\n\
     \nLe principe est simple, il y a plusieurs horaires sous forme de créneaux disponibles du lundi au vendredi, il suffit simplement de t'inscrire à l'un d'entre eux pour recevoir un raid et voir ton nombre de viewers grimper en flèche et ton tchat se déchaîner.\n\
     \nÉvidemment, l'entraide est le mot d'ordre, alors on compte également sur toi pour faire parti(e) de la chaîne des raids et être présent(e) sur les streams des autres personnes qui adhèrent à ce projet.\n\
-    \nAllez n'attend pas plus longtemps et deviens toi aussi un RAIDER en rejoignant ce serveur ici : https://discord.gg/SzDnhgEWrn )\n")
+    \nAllez n'attend pas plus longtemps et deviens toi aussi un Membre en rejoignant ce serveur ici : https://discord.gg/2EzvqkuB9d )\n")
 
     @GBoT.hybrid_command(name = "raid", description = "tuto pour réaliser un raid.")
     @app_commands.guilds(GUILD)
@@ -678,13 +662,13 @@ if __name__ == "__main__":
         await ctx.send("**Commande GBoT :**\n\
             • `/aide` : Les commandes du GBoT.\n\
             • `/link` : tuto pour lier son compte twitch et discord.\n\
-            • `/lurk` : renvois la liste des RAIDERS qui visualisent le stream en cours.\n\
+            • `/lurk` : renvois la liste des Membres qui visualisent le stream en cours.\n\
             • `/planning` : renvois le planning de la journée.\n\
-            • `/discord` : Obtenir le lien à diffuser pour rejoindre le discord RAIDERS.\n\
+            • `/discord` : Obtenir le lien à diffuser pour rejoindre le discord Membres.\n\
             • `/raid` : tuto pour réaliser un raid.\n\
-            • `/score` : Obtenir les scores des RAIDERS pour la journée en cours.\n\
+            • `/score` : Obtenir les scores des Membres pour la journée en cours.\n\
             • `/streamer` : renvois le streamer actuel du créneau horaire.\n\
-            • `/supreme` : Obtenir la liste des SPARTS SUPREMES actuel.\n\
+            • `/VIP` : Obtenir la liste des VIP actuel.\n\
             ")
     @GBoT.hybrid_command(name = "avatar", description = "affiche mon avatar.")
     @app_commands.guilds(GUILD)
@@ -695,9 +679,6 @@ if __name__ == "__main__":
         embed = Embed(title="voici mon encart perso",colour= Colour.random())
         embed.set_author(name=f"{name}",icon_url=member.display_icon)
         embed.set_thumbnail(url=f"{pfp}")
-        embed.add_field(name="votre score", value = "25",inline=True)
-        embed.add_field(name="votre rang", value = "10",inline=True)
-        embed.add_field(name="votre rang", value = "Spart Supreme")
         embed.set_footer(text = 'Généré par GBoT')
         await ctx.send(embed=embed)
             

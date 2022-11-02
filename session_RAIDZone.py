@@ -33,15 +33,15 @@ class SessionRaiders:
                 _streamer = self.ObtenirStreamer(_creneauHoraire)
             
                 if (_streamer) :
-                    _listeSpartiateDejaPresent = self.ObtenirSpartiateDejaPresent(_creneauHoraire)
-                    self.ListeChatterEnLigne(_streamer.lower(), _creneauHoraire,_listeSpartiateDejaPresent)
+                    _listeRaidersDejaPresent = self.ObtenirRaidersDejaPresent(_creneauHoraire)
+                    self.ListeChatterEnLigne(_streamer.lower(), _creneauHoraire,_listeRaidersDejaPresent)
                 else :
                     print("Absence de streamer dans streamer.txt > Pas de session Raiders valide")
             else :
                 print(BYELLOW+BLACK+"Hors créneau :"+BBLACK+WHITE+"Il est "+RED+datetime.now().strftime("%Hh%M") +WHITE+" Les créneaux horaires ne sont pas atteint. patientez...")
 
         
-        def ObtenirSpartiateDejaPresent(self,creneauHoraire):
+        def ObtenirRaidersDejaPresent(self,creneauHoraire):
             repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
             os.makedirs(repertoire, exist_ok=True) 
             name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
@@ -54,23 +54,23 @@ class SessionRaiders:
                 fichierLocal.close
             return chatters
                 
-        def SauvegardeCreneauHoraire (self,creneauHoraire,listeSpartiate):
+        def SauvegardeCreneauHoraire (self,creneauHoraire,listeRaiders):
             repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
             os.makedirs(repertoire, exist_ok=True) 
             name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
             chatters =[]
             fichierLocal = open(name,"w")
             fichierLocal.write(creneauHoraire+'\n')
-            for spartiate in listeSpartiate:
-                fichierLocal.write(spartiate+'\n')
+            for raider in listeRaiders:
+                fichierLocal.write(raider+'\n')
             fichierLocal.close
             
             name = os.path.join(GBOTPATH,"chatters.txt")
             chatters =[]
             fichierLocal = open(name,"w")
             fichierLocal.write(creneauHoraire+'\n')
-            for spartiate in listeSpartiate:
-                fichierLocal.write(spartiate+'\n')
+            for raider in listeRaiders:
+                fichierLocal.write(raider+'\n')
             fichierLocal.close
             
 
@@ -81,14 +81,15 @@ class SessionRaiders:
             fin = (datetime.now()+timedelta(hours=1)).strftime('%Hh00')
             return (debut + " - "+ fin +" :")
                         
-        def ListeChatterEnLigne(self, streamer, creneauHoraire, listeSpartiateDejaPresent):
+        def ListeChatterEnLigne(self, streamer, creneauHoraire, listeRaiderDejaPresent):
             '''
-            Renvois la liste des Spartiates en lignes
+            Renvois la liste des Raiders en lignes
             '''
-            # Recupere la liste des SPARTIATES
+            # Recupere la liste des Raiders
+            
             fichierLocal = open(os.path.join(GBOTPATH,"raiders.txt"),"r")
-            listeSpartiate =  fichierLocal.read().split("\n")
-            listeSpartiate =  [x.lower() for x in listeSpartiate]
+            listeRaiders =  fichierLocal.read().split("\n")
+            listeRaiders =  [x.lower() for x in listeRaiders]
             fichierLocal.close
 
             # Recupere les chatters du STREAMER
@@ -100,47 +101,44 @@ class SessionRaiders:
             chatters = parseData["broadcaster"]+parseData["vips"]+parseData["moderators"]+parseData["staff"]+parseData["admins"]+parseData["global_mods"]+parseData["viewers"]
             chatters =  [x.lower() for x in chatters]
 
-            # créé une liste pour trouver les Spartiates present sur le stream
+            # créé une liste pour trouver les Raiders present sur le stream
 
-            spartiateEnLigne=[]
-            spartiateHoraire=[]
+            raidersEnLigne=[]
+            raidersHoraire=[]
             
             if len(chatters)>0 :
-                for spartiate in listeSpartiateDejaPresent :      
-                    if (spartiate not in chatters) and (spartiate != ""):
-                        spartiateHoraire.append(spartiate)
-                    if (spartiate in chatters):
-                        spartiateEnLigne.append(spartiate)
+                for raider in listeRaiderDejaPresent :      
+                    if (raider not in chatters) and (raider != ""):
+                        raidersHoraire.append(raider)
+                    if (raider in chatters):
+                        raidersEnLigne.append(raider)
                 for chatter in chatters:
-                    if (chatter in listeSpartiate) and (chatter not in listeSpartiateDejaPresent):
-                        spartiateEnLigne.append(chatter)
+                    if (chatter in listeRaiders) and (chatter not in listeRaiderDejaPresent):
+                        raidersEnLigne.append(chatter)
 
 
-                
-          
             print (GREEN ,"\n"+creneauHoraire , BLUE , streamer.upper())
             print (YELLOW + str(len(chatters)) + WHITE + " viewers(s) sur le stream.")
-            print (RED + str(len(spartiateEnLigne)) + WHITE + " spartiate(s) sur le stream.")
-            print (RED + str(len(spartiateEnLigne)+len(spartiateHoraire)) + WHITE + " spartiate(s) au total sur le creneau.")
+            print (RED + str(len(raidersEnLigne)) + WHITE + " raider(s) sur le stream.")
+            print (RED + str(len(raidersEnLigne)+len(raidersHoraire)) + WHITE + " raider(s) au total sur le creneau.")
             
-            listeSpartiateFinale=[]        
-            listeSpartiateFinale.append(streamer) 
+            listeRaidersFinale=[]        
+            listeRaidersFinale.append(streamer) 
             
-            print (WHITE,"\nSpartiate(s) deconnecté(s) durant le créneau : ",end="")
-            for spartiate in spartiateHoraire:
-                if spartiate != 'vide' and spartiate != streamer :
-                    print (YELLOW,spartiate+" ",end="")
-                    listeSpartiateFinale.append(spartiate)
+            print (WHITE,"\nRaider(s) deconnecté(s) durant le créneau : ",end="")
+            for raider in raidersHoraire:
+                if raider != 'vide' and raider != streamer :
+                    print (YELLOW,raider+" ",end="")
+                    listeRaidersFinale.append(raider)
             print("\n")
             
-            for spartiate in spartiateEnLigne :
-                if (spartiate != streamer):
-                    listeSpartiateFinale.append(spartiate)
-                    print (RED + "   > " + WHITE + spartiate)
-            
-             
+            for raider in raidersEnLigne :
+                if (raider != streamer):
+                    listeRaidersFinale.append(raider)
+                    print (RED + "   > " + WHITE + raider)
+
             #SAUVEGARDE CRENEAU
-            self.SauvegardeCreneauHoraire(creneauHoraire,listeSpartiateFinale)
+            self.SauvegardeCreneauHoraire(creneauHoraire,listeRaidersFinale)
 
         def ObtenirStreamer(self, creneauHoraire):
             '''
