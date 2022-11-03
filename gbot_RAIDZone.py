@@ -7,7 +7,7 @@ from discord import Embed,Colour
 import os
 import logging
 from datetime import datetime,timedelta
-from session_Membres import SessionMembres
+from session_RAIDZone import SessionRAIDZone
 
 from colorama import Fore, Back
 from dotenv import load_dotenv
@@ -45,6 +45,8 @@ TOKEN = os.getenv("TOKEN")
     
 PROD_GUILD = discord.Object(1037338719780339752)
 TEST_GUILD = None
+
+
 
 if DEBUG == "True":
     GUILD = TEST_GUILD
@@ -98,7 +100,7 @@ class GBoT(commands.Bot):
         await self.wait_until_ready()
         while not self.is_closed():
             print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session Membres START')
-            bob=SessionMembres()
+            SessionRAIDZone()
             print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session Membres FIN\n')
             await asyncio.sleep(timing_sessionMembres) 
 
@@ -115,7 +117,7 @@ class GBoT(commands.Bot):
         return (debut + " - "+ fin +" :") 
     
     def sauvePlanning(self):
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite")) 
         creneauActuel = self.DetermineCreneau()
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT * FROM 'GBoT'")
@@ -200,7 +202,7 @@ class GBoT(commands.Bot):
             message = messages[0].content
             ligneMessage = message.split("\n")
             
-            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite")) 
+            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite")) 
             curseur = self.connexionSQL.cursor()
             
             for ligne in  ligneMessage :
@@ -236,7 +238,7 @@ class GBoT(commands.Bot):
                     "22h00 - 23h00 :",
                     "23h00 - 00h00 :",
                     "00h00 - 01h00 :"]
-            self.connexionSQL =  sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+            self.connexionSQL =  sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
             curseur = self.connexionSQL.cursor()
             for creneau in listeCreneau:
                 curseur.execute("UPDATE GBoT SET streamer = 'vide' WHERE planning = '"+creneau+"'")
@@ -250,7 +252,7 @@ class GBoT(commands.Bot):
             with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
                 streamer = fichier.read()
 
-            idChannel = 979853240642437171
+            idChannel = 1037340918937833543
             channel = self.get_channel(idChannel)
             messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
             for messageAEffacer in messages :
@@ -274,7 +276,7 @@ class GBoT(commands.Bot):
             idChannel = self.recupereIDChannelPresence()                
             channel = self.get_channel(idChannel) 
                 
-            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
             cur = self.connexionSQL.cursor()
             cur.execute("SELECT * FROM 'Membre'")
             rows = cur.fetchall()                
@@ -309,7 +311,7 @@ class GBoT(commands.Bot):
                 idChannel = self.recupereIDChannelPresence()                
                 await self.afficheScore(self.get_channel(idChannel))                
                 # Remet les score de la journée a 0
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
                 cur = self.connexionSQL.cursor()
                 cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE score>0 ORDER BY total DESC, pseudo ASC")
                 rows = cur.fetchall()
@@ -324,7 +326,7 @@ class GBoT(commands.Bot):
     
     def recupereScore(self):
         # Recupere les scores pour les afficher une derniere fois
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()  
         cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
         rows = cur.fetchall()
@@ -351,7 +353,7 @@ class GBoT(commands.Bot):
     
     async def recupereScoreMembres(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()  
         cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
         rows = cur.fetchall()
@@ -404,7 +406,7 @@ class GBoT(commands.Bot):
 
     def recupereVIP(self):
         users = self.get_all_members()
-        listeRole= self.get_guild(GUILD).roles
+        listeRole= self.get_guild(1037338719780339752).roles
         listeVIP=[]
         message = "\n:medal: __**V.I.P**__\n"
         for membre in users:
@@ -445,8 +447,8 @@ class GBoT(commands.Bot):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
         # channel = self.get_channel(979857092603162695) # channel annonce
         users = self.get_all_members()
-        listeRole= self.get_guild(GUILD).roles
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        listeRole= self.get_guild(1037338719780339752).roles
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
@@ -456,9 +458,9 @@ class GBoT(commands.Bot):
             classementMembres[membre]=total
         self.connexionSQL.close()
         
-        for membre in users:
-                if get(listeRole, name="VIP") in membre.roles:
-                    await membre.remove_roles(get(listeRole, name="VIP"))
+        for Membre in users:
+                if get(listeRole, name="VIP") in Membre.roles:
+                    await Membre.remove_roles(get(listeRole, name="VIP"))
                     print("on retire ",Membre.display_name)
              
                 if Membre.display_name.lower() in classementMembres :                    
@@ -467,7 +469,7 @@ class GBoT(commands.Bot):
 
         # A deplacer vers distribution role apres debug
         users = self.get_all_members()
-        listeRole= self.get_guild(GUILD).roles
+        listeRole= self.get_guild(1037338719780339752).roles
         listeVIP=[]
         message = ''
         for Membre in users:
@@ -483,7 +485,7 @@ class GBoT(commands.Bot):
         
         
         message += ":medal: Le top viewers des Sparts Suprêmes ::medal:\n\n" 
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
@@ -510,7 +512,7 @@ class GBoT(commands.Bot):
         await channel.send(message) 
 
     def initTableSql(self):
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"basededonnees.sqlite"))
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         curseur = self.connexionSQL.cursor()
         curseur.execute('''CREATE TABLE IF NOT EXISTS GBoT(
             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -586,7 +588,7 @@ if __name__ == "__main__":
         #await ctx.defer(ephemeral=True)
         await ctx.send("Actuellement le nom du Streamer est : "+reponse)
         
-    @GBoT.hybrid_command(name = "VIP", description = "renvois la liste des VIPs.")
+    @GBoT.hybrid_command(name = "vip", description = "renvois la liste des VIPs.")
     @app_commands.guilds(GUILD)
     async def supreme(ctx:commands.Context):        
         # Commande !supreme
