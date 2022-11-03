@@ -3,7 +3,8 @@ import discord
 from discord.ext import commands
 from discord.utils import get
 from discord import app_commands
-from discord import Embed,Colour
+from discord import Embed,Colour,SelectOption
+from discord.ui import Select,View
 import os
 import logging
 from datetime import datetime,timedelta
@@ -349,7 +350,13 @@ class GBoT(commands.Bot):
             reponse2 = ""
 
         return (reponse1,reponse2)
-    
+
+    def resa_verifjour(self,jour):
+        listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi"]
+        if jour in listeJour :
+            return jour
+        else:
+            return "False"
     
     async def recupereScoreMembres(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
@@ -684,6 +691,59 @@ if __name__ == "__main__":
         embed.set_footer(text = 'Généré par GBoT')
         await ctx.send(embed=embed)
             
+    #######################################
+    @GBoT.hybrid_command(name = "resa", description = "reserve un creneau.")
+    @app_commands.guilds(GUILD)
+    async def resa(ctx:commands.Context,jour:str): 
+        await ctx.defer(ephemeral=True)
+        jour=jour.lower()
+        listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi"]
+        if GBoT.resa_verifjour(jour) == 'False' :
+            embed = Embed(title="ERREUR :",colour= Colour.red())
+            embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
+            embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi` et `samedi`.",  inline = False)
+            embed.set_footer(text = 'Généré par GBoT')
+            await ctx.send(embed=embed)
+            
+        else:
+            
+            listeCreneau=["09h00 - 10h00 :",
+                        "10h00 - 11h00 :",
+                        "11h00 - 12h00 :",
+                        "12h00 - 13h00 :",
+                        "13h00 - 14h00 :",
+                        "14h00 - 15h00 :",
+                        "15h00 - 16h00 :",
+                        "16h00 - 17h00 :",
+                        "17h00 - 18h00 :",
+                        "18h00 - 19h00 :",
+                        "19h00 - 20h00 :",
+                        "20h00 - 21h00 :",
+                        "21h00 - 22h00 :",                          
+                        "22h00 - 23h00 :",
+                        "23h00 - 00h00 :",
+                        "00h00 - 01h00 :"]
+            listeOption =[]
+            for creneau in listeCreneau :
+                listeOption.append(SelectOption(label=creneau,emoji="🔹"))
+            select = Select(
+                min_values=1,
+                max_values=2,
+                placeholder=f"Choisissez vos creneaux pour {jour} :",
+                options=listeOption,
+            )
+            async def my_callback(interaction):
+                select.disabled = True
+                await interaction.response.edit_message(view=view)
+                await interaction.followup.send(f"prise en compte des creneaux : {select.values}")
+
+                
+            select.callback= my_callback   
+            view = View()
+            view.add_item(select)
+            
+            await ctx.send("Choisis une réponse :", view=view)
+
     GBoT.run(TOKEN)
 
 
