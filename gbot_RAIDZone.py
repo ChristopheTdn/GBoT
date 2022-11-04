@@ -440,15 +440,7 @@ class GBoT(commands.Bot):
             channel = self.get_channel(message.channel.id)
             messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
             for messageAEffacer in messages :
-                await messageAEffacer.delete()
-        
-                    
-        
-        if message.channel.id  == 1037345800281395341: #Channel #Pub
-            channelBLABLA = self.get_channel(1037341465099120672)
-            auteur = str(message.author.id)
-            await channelBLABLA.send("<@"+auteur+"> attire votre attention et requiert votre aide dans le channel <#1037345800281395341>. Membres !!! Apportez lui votre soutien !")
-            
+                await messageAEffacer.delete()       
 
     async def distributionRole (self,channel):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
