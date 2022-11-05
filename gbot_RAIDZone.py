@@ -43,12 +43,25 @@ GBOTPATH, filename = os.path.split(__file__)
 load_dotenv(dotenv_path=os.path.join(GBOTPATH,"config"))
 DEBUG = os.getenv("DEBUG")
 TOKEN = os.getenv("TOKEN")
-    
-PROD_GUILD = discord.Object(1037338719780339752)
+
+#Channel
+channelID = {
+    "lundi": 1037341064018796604,
+    "mardi": 1037341103747256361,
+    "mercredi": 1037341153466536037,
+    "jeudi": 1037341185569730561,
+    "vendredi": 1037341222341202020,
+    "samedi": 1037341259657920512,
+    "presence":1037347680965365791,
+    "annonce":1037341418722705468,
+    "raid_en_cours": 1037340918937833543,
+    "guild":1037338719780339752,
+    }
+
+
+#Guild    
+PROD_GUILD = discord.Object(channelID["guild"])
 TEST_GUILD = None
-
-
-
 if DEBUG == "True":
     GUILD = TEST_GUILD
 else :
@@ -169,36 +182,31 @@ class GBoT(commands.Bot):
         '''
         renvois l ID du channel en fonction de l heure  local
         '''
-        channelID = 0
+        channel = 0
         jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
         if (datetime.now().hour<1):
             jour-=1  
             if jour<0: jour=6
-            
         if jour==0 : # Lundi
-            channelID = 1037341064018796604
+            channel = channelID["lundi"]
         elif jour==1 : # Mardi
-            channelID = 1037341103747256361
+            channel = channelID["mardi"]
         elif jour==2 : # Mercredi
-            channelID = 1037341153466536037
+            channel = channelID["mercredi"]
         elif jour==3 : # Jeudi
-            channelID = 1037341185569730561
+            channel = channelID["jeudi"]
         elif jour==4 : # Vendredi
-            channelID = 1037341222341202020
+            channel = channelID["vendredi"]
         elif jour==5 : # Samedi
-            channelID = 1037341259657920512
+            channel = channelID["samedi"]
 
             
-        return channelID
-
-    def recupereIDChannelPresence(self):
-        channelID = 1037347680965365791 #presence     
-        return channelID
+        return channel
 
     async def recuperePlanning(self):
-        _channelID = self.recupereIDChannelPlanning()
-        if (_channelID != 0) :
-            channel = self.get_channel(_channelID)
+        _channel = self.recupereIDChannelPlanning()
+        if (_channel != 0) :
+            channel = self.get_channel(_channel)
             messages = [messageAEffacer async for messageAEffacer in channel.history(limit=1,oldest_first=True)]
             message = messages[0].content
             ligneMessage = message.split("\n")
@@ -207,7 +215,7 @@ class GBoT(commands.Bot):
             curseur = self.connexionSQL.cursor()
             
             for ligne in  ligneMessage :
-                ligne = re.sub(r' +', ' ', ligne)
+                ligne = re.sub(r' +', ' ', ligne.strip()) #remplace les multiples espaces par un seul
                 ligneCut = ligne.split(" ")
                 
                 nom_streamer = ""
@@ -252,9 +260,7 @@ class GBoT(commands.Bot):
         if datetime.now().minute == 1 : 
             with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichier :
                 streamer = fichier.read()
-
-            idChannel = 1037340918937833543
-            channel = self.get_channel(idChannel)
+            channel = self.get_channel(channelID["raid_en_cours"])
             messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
             for messageAEffacer in messages :
                 await messageAEffacer.delete()
@@ -272,10 +278,8 @@ class GBoT(commands.Bot):
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
-                
-                
-            idChannel = self.recupereIDChannelPresence()                
-            channel = self.get_channel(idChannel) 
+                                
+            channel = self.get_channel(channelID["presence"]) 
                 
             self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
             cur = self.connexionSQL.cursor()
@@ -308,9 +312,8 @@ class GBoT(commands.Bot):
             self.connexionSQL.close() 
 
             if datetime.now().hour < 1: 
-                # Affiche score
-                idChannel = self.recupereIDChannelPresence()                
-                await self.afficheScore(self.get_channel(idChannel))                
+                # Affiche score              
+                await self.afficheScore(self.get_channel(channelID["presence"]))                
                 # Remet les score de la journée a 0
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
                 cur = self.connexionSQL.cursor()
@@ -323,7 +326,7 @@ class GBoT(commands.Bot):
                 self.connexionSQL.close()
                         
             if datetime.now().hour < 1 and datetime.now().weekday()==6 : 
-                await self.distributionRole(self.get_channel(1037341418722705468)) #annonce
+                await self.distributionRole(self.get_channel(channelID["annonce"])) #annonce
     
     def recupereScore(self):
         # Recupere les scores pour les afficher une derniere fois
@@ -357,7 +360,54 @@ class GBoT(commands.Bot):
             return jour
         else:
             return "False"
+    async def resa_renvoisCreneau(self, jour):
+        """Renvois la liste des creneau disponible pour un jour donné"""
+        channel = self.get_channel(channelID[jour])
+        messages = [MessagesChannel async for MessagesChannel in channel.history(limit=1,oldest_first=True)]
+        message = messages[0].content
+        ligneMessage = message.split("\n")
+        listeCreneaux=[]
+        
+        for ligne in  ligneMessage :
+            ligne = re.sub(r' +', ' ', ligne.strip()) #remplace les multiples espaces par un seul
+            ligneCut = ligne.split(" ")
+
+            if len(ligneCut) == 4 :
+                creneau = ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]
+                listeCreneaux.append(creneau)
+        return listeCreneaux     
     
+    async def resa_valideCreneaux(self,membre,jour,listeDemande):
+        """Inscrit la liste des creneaux fourni pour un jour donné"""
+        channel = self.get_channel(channelID[jour])
+        messages = [MessagesChannel async for MessagesChannel in channel.history(limit=1,oldest_first=True)]
+        message = messages[0].content
+        ligneMessage = message.split("\n")
+        listeCreneaux=[]
+        messageReponse = ""
+        conflitCreneau = False
+        for ligne in  ligneMessage :
+            if ligne != '':
+                ligne = re.sub(r' +', ' ', ligne.strip()) #remplace les multiples espaces par un seul
+                ligneCut = ligne.split(" ")
+                if ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3] in listeDemande :
+                    if len(ligneCut) >4 :
+                         messageReponse += ligne + "\n"
+                         conflitCreneau = True
+                    else :
+                        messageReponse += ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+' <@'+str(membre) +'> (ajouté par Gbot)\n'            
+                else : 
+                    messageReponse += ligne + "\n"
+        channel = self.get_channel(channelID[jour])
+        messages = [messageAEffacer async for messageAEffacer in channel.history(limit=4)]
+        for messageAEffacer in messages :
+            await messageAEffacer.delete() 
+        await channel.send(messageReponse)  
+        if conflitCreneau:
+            await channel.send(f"<@{membre}> à généré un clonflit de creneaux. ({listeDemande})")  
+                
+        
+        
     async def recupereScoreMembres(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
@@ -413,7 +463,7 @@ class GBoT(commands.Bot):
 
     def recupereVIP(self):
         users = self.get_all_members()
-        listeRole= self.get_guild(1037338719780339752).roles
+        listeRole= self.get_guild(channelID["guild"]).roles
         listeVIP=[]
         message = "\n:medal: __**V.I.P**__\n"
         for membre in users:
@@ -446,7 +496,7 @@ class GBoT(commands.Bot):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
         # channel = self.get_channel(979857092603162695) # channel annonce
         users = self.get_all_members()
-        listeRole= self.get_guild(1037338719780339752).roles
+        listeRole= self.get_guild(channelID["guild"]).roles
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()
         cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
@@ -468,7 +518,7 @@ class GBoT(commands.Bot):
 
         # A deplacer vers distribution role apres debug
         users = self.get_all_members()
-        listeRole= self.get_guild(1037338719780339752).roles
+        listeRole= self.get_guild(channelID["guild"]).roles
         listeVIP=[]
         message = ''
         for Membre in users:
@@ -695,39 +745,30 @@ if __name__ == "__main__":
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
             embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi` et `samedi`.",  inline = False)
             embed.set_footer(text = 'Généré par GBoT')
-            await ctx.send(embed=embed)
-            
+            await ctx.send(embed=embed)          
         else:
-            
-            listeCreneau=["09h00 - 10h00 :",
-                        "10h00 - 11h00 :",
-                        "11h00 - 12h00 :",
-                        "12h00 - 13h00 :",
-                        "13h00 - 14h00 :",
-                        "14h00 - 15h00 :",
-                        "15h00 - 16h00 :",
-                        "16h00 - 17h00 :",
-                        "17h00 - 18h00 :",
-                        "18h00 - 19h00 :",
-                        "19h00 - 20h00 :",
-                        "20h00 - 21h00 :",
-                        "21h00 - 22h00 :",                          
-                        "22h00 - 23h00 :",
-                        "23h00 - 00h00 :",
-                        "00h00 - 01h00 :"]
-            listeOption =[]
-            for creneau in listeCreneau :
-                listeOption.append(SelectOption(label=creneau,emoji="🔹"))
-            select = Select(
-                min_values=1,
-                max_values=2,
-                placeholder=f"Choisissez vos creneaux pour {jour} :",
-                options=listeOption,
-            )
-            async def my_callback(interaction):
-                select.disabled = True
-                await interaction.response.edit_message(view=view)
-                await interaction.followup.send(f"prise en compte des creneaux : {select.values}")
+            listeCreneaux = await GBoT.resa_renvoisCreneau(jour)
+            listeOption = []
+            if len(listeCreneaux)==0:
+                embed = Embed(title="ERREUR :",colour= Colour.red())
+                embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
+                embed.add_field(name="Absence de creneau",value=f"Il n y a pas de creneaux disponibles pour la journée de {jour}.",  inline = False)
+                embed.set_footer(text = 'Généré par GBoT')
+                await ctx.send(embed=embed)  
+            else :
+                for creneau in listeCreneaux :
+                    listeOption.append(SelectOption(label=creneau,emoji="🔹"))
+                select = Select(
+                    min_values=1,
+                    max_values=2,
+                    placeholder=f"Choisissez vos creneaux pour {jour} :",
+                    options=listeOption,
+                )
+                async def my_callback(interaction):
+                    select.disabled = True
+                    await interaction.response.edit_message(view=view)
+                    await GBoT.resa_valideCreneaux(ctx.author.id,jour,select.values)
+
 
                 
             select.callback= my_callback   
