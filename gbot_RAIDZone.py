@@ -395,7 +395,7 @@ class GBoT(commands.Bot):
                          messageReponse += ligne + "\n"
                          conflitCreneau = True
                     else :
-                        messageReponse += ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+' <@'+str(membre) +'> (ajouté par Gbot)\n'            
+                        messageReponse += ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+' <@'+str(membre) +'>\n'            
                 else : 
                     messageReponse += ligne + "\n"
         channel = self.get_channel(channelID[jour])
