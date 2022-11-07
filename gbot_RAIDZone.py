@@ -357,7 +357,7 @@ class GBoT(commands.Bot):
         return (reponse1,reponse2)
 
     def resa_verifjour(self,jour):
-        listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi"]
+        listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
         if jour in listeJour :
             return jour
         else:
@@ -741,7 +741,6 @@ if __name__ == "__main__":
     async def resa(ctx:commands.Context,jour:str): 
         await ctx.defer(ephemeral=True)
         jour=jour.lower()
-        listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
         if GBoT.resa_verifjour(jour) == 'False' :
             embed = Embed(title="ERREUR :",colour= Colour.red())
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
