@@ -745,7 +745,7 @@ if __name__ == "__main__":
         if GBoT.resa_verifjour(jour) == 'False' :
             embed = Embed(title="ERREUR :",colour= Colour.red())
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
-            embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi`, `samedi` et 'dimanche'.",  inline = False)
+            embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi`, `samedi` et `dimanche`.",  inline = False)
             embed.set_footer(text = 'Généré par GBoT')
             await ctx.send(embed=embed)          
         else:
