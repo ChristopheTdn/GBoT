@@ -52,6 +52,7 @@ channelID = {
     "jeudi": 1037341185569730561,
     "vendredi": 1037341222341202020,
     "samedi": 1037341259657920512,
+    "dimanche": 1039067133532971018,
     "presence":1037347680965365791,
     "annonce":1037341418722705468,
     "raid_en_cours": 1037340918937833543,
@@ -113,9 +114,9 @@ class GBoT(commands.Bot):
     async def appelSessionMembres(self,timing_sessionMembres):
         await self.wait_until_ready()
         while not self.is_closed():
-            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session Membres START')
+            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session RAIDZone START')
             SessionRAIDZone()
-            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session Membres FIN\n')
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session RAIDZone FIN\n')
             await asyncio.sleep(timing_sessionMembres) 
 
     def enregistreMembres(self):
@@ -199,7 +200,8 @@ class GBoT(commands.Bot):
             channel = channelID["vendredi"]
         elif jour==5 : # Samedi
             channel = channelID["samedi"]
-
+        elif jour==6 : # Samedi
+            channel = channelID["dimanche"]
             
         return channel
 
@@ -739,11 +741,11 @@ if __name__ == "__main__":
     async def resa(ctx:commands.Context,jour:str): 
         await ctx.defer(ephemeral=True)
         jour=jour.lower()
-        listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi"]
+        listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
         if GBoT.resa_verifjour(jour) == 'False' :
             embed = Embed(title="ERREUR :",colour= Colour.red())
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
-            embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi` et `samedi`.",  inline = False)
+            embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi`, `samedi` et 'dimanche'.",  inline = False)
             embed.set_footer(text = 'Généré par GBoT')
             await ctx.send(embed=embed)          
         else:
