@@ -276,7 +276,7 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Membres
-        if datetime.now().minute == 59 :
+        if datetime.now().minute == 59:
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
@@ -303,43 +303,57 @@ class GBoT(commands.Bot):
                             score_vendredi = Membre[6]
                             score_samedi = Membre[7]
                             score_dimanche = Membre [8]
-                            if jour =="lundi" : score_lundi =+1
-                            elif jour == "mardi" : score_mardi =+1
-                            elif jour == "mercredi" : score_mercredi =+1
-                            elif jour == "jeudi" : score_jeudi +=1
-                            elif jour == "vendredi" : score_vendredi += 1
-                            elif jour == "samedi" : score_samedi+=1
-                            elif jour == "dimanche" : score_dimanche +=1
+                            if jour =="lundi" :
+                                score_lundi += 1
+                            elif jour == "mardi" :
+                                score_mardi += 1
+                            elif jour == "mercredi" :
+                                score_mercredi += 1
+                            elif jour == "jeudi" :
+                                score_jeudi +=1
+                            elif jour == "vendredi" :
+                                score_vendredi += 1
+                            elif jour == "samedi" :
+                                score_samedi += 1
+                            elif jour == "dimanche" :
+                                score_dimanche += 1
                             scoreTotal = score_lundi+score_mardi+score_mercredi+score_jeudi+score_vendredi+score_samedi+score_dimanche
                             flagTrouve = True
-                            cur.execute("UPDATE Membre SET lundi = "+str(score_lundi)+
-                                        ",mardi = "+str(score_mardi)+
-                                        ",mercredi = "+str(score_mercredi)+
-                                        ",jeudi = "+str(score_jeudi)+
-                                        ",vendredi = "+str(score_vendredi)+
-                                        ",samedi = "+str(score_samedi)+
-                                        ",dimanche = "+str(score_dimanche)+
-                                        ",total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
+                            req = "UPDATE Membre SET lundi = "+str(score_lundi)+\
+                                ",mardi = "+str(score_mardi)+\
+                                ",mercredi = "+str(score_mercredi)+\
+                                ",jeudi = "+str(score_jeudi)+\
+                                ",vendredi = "+str(score_vendredi)+\
+                                ",samedi = "+str(score_samedi)+\
+                                ",dimanche = "+str(score_dimanche)+\
+                                ",total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'"
+                            cur.execute(req)
 
-                        if flagTrouve == False :
-                            if chatter != "vide" :
-                                score_lundi = 0
-                                score_mardi = 0
-                                score_mercredi = 0
-                                score_jeudi = 0
-                                score_vendredi = 0
-                                score_samedi = 0
-                                score_dimanche = 0
-                                if jour =="lundi" : score_lundi =+1
-                                elif jour == "mardi" : score_mardi =+1
-                                elif jour == "mercredi" : score_mercredi =+1
-                                elif jour == "jeudi" : score_jeudi +=1
-                                elif jour == "vendredi" : score_vendredi += 1
-                                elif jour == "samedi" : score_samedi+=1
-                                elif jour == "dimanche" : score_dimanche +=1
-                                scoreTotal = 1
-                                cur.execute('''INSERT OR REPLACE INTO Membre(pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) VALUES (?,?,?,?,?,?,?,?,?)''',
-                                            (chatter,score_lundi,score_mardi,score_mercredi,score_jeudi,score_vendredi,score_samedi,score_dimanche))
+                    if flagTrouve == False :
+                        if chatter != "vide" :
+                            score_lundi = 0
+                            score_mardi = 0
+                            score_mercredi = 0
+                            score_jeudi = 0
+                            score_vendredi = 0
+                            score_samedi = 0
+                            score_dimanche = 0
+                            if jour =="lundi" :
+                                score_lundi += 1
+                            elif jour == "mardi" :
+                                score_mardi += 1
+                            elif jour == "mercredi" :
+                                score_mercredi += 1
+                            elif jour == "jeudi" :
+                                score_jeudi += 1
+                            elif jour == "vendredi" :
+                                score_vendredi += 1
+                            elif jour == "samedi" :
+                                score_samedi +=1
+                            elif jour == "dimanche" :
+                                score_dimanche +=1
+                            scoreTotal = 1
+                            cur.execute("INSERT OR REPLACE INTO Membre(pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) VALUES (?,?,?,?,?,?,?,?,?)",(chatter,score_lundi,score_mardi,score_mercredi,score_jeudi,score_vendredi,score_samedi,score_dimanche,scoreTotal))
             await channel.send(reponse)
             
             self.connexionSQL.commit()
