@@ -267,7 +267,7 @@ class GBoT(commands.Bot):
             for messageAEffacer in messages :
                 await messageAEffacer.delete()
 
-            if streamer != "" and streamer != "vide":
+            if streamer.strip() != "" and streamer != "vide" :
                 reponse = "**`"+streamer+"`** (raid > https://www.twitch.tv/"+streamer+" )"
                 await channel.send("Donnez de la force à "+reponse)
             else :
@@ -276,7 +276,7 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Membres
-        if datetime.now().minute == 59:
+        if datetime.now().minute == 58:
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
