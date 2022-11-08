@@ -139,7 +139,16 @@ class GBoT(commands.Bot):
         rows = cur.fetchall()
         planning = ""
         streamer = "vide"
-        listeCreneauJour=["09h00 - 10h00 :",
+        listeCreneauJour=["00h00 - 01h00 :",
+                    "01h00 - 02h00 :",
+                    "02h00 - 03h00 :",
+                    "03h00 - 04h00 :",
+                    "04h00 - 05h00 :",
+                    "05h00 - 06h00 :",
+                    "06h00 - 07h00 :",
+                    "07h00 - 08h00 :",
+                    "08h00 - 09h00 :",
+                    "09h00 - 10h00 :",
                     "10h00 - 11h00 :",
                     "11h00 - 12h00 :",
                     "12h00 - 13h00 :",
@@ -154,19 +163,12 @@ class GBoT(commands.Bot):
                     "21h00 - 22h00 :",                          
                     "22h00 - 23h00 :",
                     "23h00 - 00h00 :"]
-        listeCreneauNuit=["00h00 - 01h00 :"]
 
         for creneau in rows :
             if creneau[1] in listeCreneauJour :
                 planning += creneau[1]+" "+creneau[2]+"\n"
                 if creneau[1] == creneauActuel :
                     streamer = creneau[2]
-        for creneau in rows :
-            if creneau[1] in listeCreneauNuit :
-                planning += creneau[1]+" "+creneau[2]+"\n"
-                if creneau[1] == creneauActuel :
-                    streamer = creneau[2]
-
         self.connexionSQL.commit()
         self.connexionSQL.close()
 
