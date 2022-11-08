@@ -276,13 +276,13 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Membres
-        if (datetime.now().hour< 1 or datetime.now().hour >=9) and datetime.now().minute == 59 :
+        if datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
                                 
             channel = self.get_channel(channelID["presence"]) 
-                
+            jour = self.determineJour()    
             self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
             cur = self.connexionSQL.cursor()
             cur.execute("SELECT * FROM 'Membre'")
@@ -296,55 +296,71 @@ class GBoT(commands.Bot):
                     flagTrouve = False
                     for Membre in rows :
                         if Membre[1] == chatter :
-                            score = Membre[2] + 1
-                            if Membre[3] != None :
-                                scoreTotal = Membre[3] + 1
-                            else:
-                                scoreTotal = score
+                            score_lundi = Membre[2]
+                            score_mardi = Membre[3]
+                            score_mercredi = Membre[4]
+                            score_jeudi = Membre[5]
+                            score_vendredi = Membre[6]
+                            score_samedi = Membre[7]
+                            score_dimanche = Membre [8]
+                            if jour =="lundi" : score_lundi =+1
+                            elif jour == "mardi" : score_mardi =+1
+                            elif jour == "mercredi" : score_mercredi =+1
+                            elif jour == "jeudi" : score_jeudi +=1
+                            elif jour == "vendredi" : score_vendredi += 1
+                            elif jour == "samedi" : score_samedi+=1
+                            elif jour == "dimanche" : score_dimanche +=1
+                            scoreTotal = score_lundi+score_mardi+score_mercredi+score_jeudi+score_vendredi+score_samedi+score_dimanche
                             flagTrouve = True
-                            cur.execute("UPDATE Membre SET score = "+str(score)+", total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
-                                
+                            cur.execute("UPDATE Membre SET lundi = "+str(score_lundi)+
+                                        ",mardi = "+str(score_mardi)+
+                                        ",mercredi = "+str(score_mercredi)+
+                                        ",jeudi = "+str(score_jeudi)+
+                                        ",vendredi = "+str(score_vendredi)+
+                                        ",samedi = "+str(score_samedi)+
+                                        ",dimanche = "+str(score_dimanche)+
+                                        ",total = "+str(scoreTotal)+ " WHERE pseudo  = '"+chatter+"'")
+
                         if flagTrouve == False :
                             if chatter != "vide" :
-                                cur.execute('''INSERT OR REPLACE INTO Membre(pseudo, score,total) VALUES (?,?,?)''', (chatter,1,1))  
-
+                                score_lundi = 0
+                                score_mardi = 0
+                                score_mercredi = 0
+                                score_jeudi = 0
+                                score_vendredi = 0
+                                score_samedi = 0
+                                score_dimanche = 0
+                                if jour =="lundi" : score_lundi =+1
+                                elif jour == "mardi" : score_mardi =+1
+                                elif jour == "mercredi" : score_mercredi =+1
+                                elif jour == "jeudi" : score_jeudi +=1
+                                elif jour == "vendredi" : score_vendredi += 1
+                                elif jour == "samedi" : score_samedi+=1
+                                elif jour == "dimanche" : score_dimanche +=1
+                                scoreTotal = 1
+                                cur.execute('''INSERT OR REPLACE INTO Membre(pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) VALUES (?,?,?,?,?,?,?,?,?)''',
+                                            (chatter,score_lundi,score_mardi,score_mercredi,score_jeudi,score_vendredi,score_samedi,score_dimanche))
             await channel.send(reponse)
-                
+            
             self.connexionSQL.commit()
             self.connexionSQL.close() 
 
-            if datetime.now().hour < 1: 
-                # Affiche score              
-                await self.afficheScore(self.get_channel(channelID["presence"]))                
-                # Remet les score de la journée a 0
-                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
-                cur = self.connexionSQL.cursor()
-                cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE score>0 ORDER BY total DESC, pseudo ASC")
-                rows = cur.fetchall()
-                for data in rows :
-                    (Membre,score,total) = data
-                    cur.execute("UPDATE Membre SET score = 0 WHERE pseudo  = '"+Membre+"'")        
-                self.connexionSQL.commit()
-                self.connexionSQL.close()
-                        
-            if datetime.now().hour < 1 and datetime.now().weekday()==6 : 
-                await self.distributionRole(self.get_channel(channelID["annonce"])) #annonce
     
     def recupereScore(self):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()  
-        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
         self.connexionSQL.close()
         
         reponse = ""
         
         for data in rows :
-            (Membre,score,scoreTotal) = data
+            (pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,scoreTotal) = data
             if scoreTotal == None :
                 scoreTotal=score
-            reponse += "• `"+Membre+"`" + " : **"+ str(score) +"** --> **"+ str(scoreTotal)+"**\n"
+            reponse += "• `"+pseudo+"`" + " : **"+str(scoreTotal)+"**\n"
 
         if len(reponse)>1980 :
             messageTotal= reponse
@@ -409,12 +425,37 @@ class GBoT(commands.Bot):
             await channel.send(f"<@{membre}> à généré un clonflit de creneaux. ({listeDemande})")  
                 
         
-        
+    def determineJour (self):
+        '''
+        renvois le jour a prendre sous forme de texte
+        '''
+        today =""
+        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
+        if (datetime.now().hour<1):
+            jour-=1  
+            if jour<0: jour=6
+        if jour==0 : # Lundi
+            today = "lundi"
+        elif jour==1 : # Mardi
+            today = "mardi"
+        elif jour==2 : # Mercredi
+            today = "mercredi"
+        elif jour==3 : # Jeudi
+            today = "jeudi"
+        elif jour==4 : # Vendredi
+            today = "vendredi"
+        elif jour==5 : # Samedi
+            today = "samedi"
+        elif jour==6 : # Samedi
+            today = "dimanche"
+        return today   
+
     async def recupereScoreMembres(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+        jour = self.DetermineJour()
         cur = self.connexionSQL.cursor()  
-        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
         rows = cur.fetchall()
         self.connexionSQL.close()
         
@@ -429,12 +470,20 @@ class GBoT(commands.Bot):
         scoreTotal = 0
         resultatMax=10
         for data in rows :
-            (membre,score,total) = data
+            (membre,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) = data
+            if jour == 'lundi' : score = lundi
+            elif jour == 'mardi' : score = mardi
+            elif jour == 'mercredi' : score = mercredi
+            elif jour == 'jeudi' : score = jeudi
+            elif jour == 'vendredi' : score = vendredi
+            elif jour == 'samedi' : score = samedi
+            elif jour == 'dimanche' : score = dimanche
+            total = lundi + mardi + mercredi + jeudi + vendredi + samedi + dimanche 
             if membre == auteur.display_name.lower()   :
                 embed.add_field(name="votre score **"+ str(score)+"/"+str(total)+" pts**",value="\u200b",  inline = False)
         reponse = "\u200b"
         for data in rows :
-            (membre,score,total) = data
+            (membre,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) = data
             if scoreTotal > total :
                 place += 1
             scoreTotal=total
@@ -559,7 +608,7 @@ class GBoT(commands.Bot):
         self.connexionSQL.close()
         await channel.send(message)  
         message = "\n\n"
-        message += "Les <@&951980979327762492> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Membres.\n" 
+        message += "Les <@&1037343347905409116> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Membres.\n" 
         await channel.send(message) 
 
     def initTableSql(self):
@@ -574,6 +623,13 @@ class GBoT(commands.Bot):
         curseur.execute('''CREATE TABLE IF NOT EXISTS Membre(
             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
             pseudo TEXT UNIQUE,
+            lundi INTEGER,
+            mardi INTEGER,
+            mercredi INTEGER,
+            jeudi INTEGER,
+            vendredi INTEGER,
+            samedi INTEGER,
+            dimanche INTEGER,
             score INTEGER,
             total INTEGER
             )''')
@@ -601,7 +657,7 @@ class GBoT(commands.Bot):
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("21h00 - 22h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("22h00 - 23h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("23h00 - 00h00 :"," "))
-        curseur.execute('''INSERT OR REPLACE INTO Membre (pseudo, score,total) VALUES (?,?,?)''', ("none",0,0))
+        curseur.execute('''INSERT OR REPLACE INTO Membre (pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) VALUES (?,?,?,?,?,?,?,?,?)''', ("none",0,0,0,0,0,0,0,0))
         self.connexionSQL.commit()
         self.connexionSQL.close()
 
@@ -651,12 +707,12 @@ if __name__ == "__main__":
     async def scoregeneral(ctx:commands.Context):
         # Commande !score
         reponse1, reponse2 = GBoT.recupereScore()
-        await ctx.send('\n:medal: __**Score des Membres présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
+        await ctx.send('\n:medal: __**Score des Membres :**__ *( sur 7 jours )*\n')
         if reponse1 != "":
             await ctx.send(reponse1)
         if reponse2 != "":
             await ctx.send(reponse2)
-        await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur la semaine vous permettra d'acceder au Grade de **VIP** pour la semaine suivante.*\n\n")
+        await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur 7 jours vous permettra d'acceder au Grade de **VIP**\n\n")
 
     @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des Membres pour la journée en cours.")
     @app_commands.guilds(GUILD)
