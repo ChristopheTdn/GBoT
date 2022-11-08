@@ -28,18 +28,14 @@ class SessionRAIDZone:
             '''
             
             '''
-            if datetime.now().hour< 1 or datetime.now().hour >=9 :
-                _creneauHoraire = self.DetermineCreneau()
-                _streamer = self.ObtenirStreamer(_creneauHoraire)
-            
-                if (_streamer) :
-                    _listeMembresDejaPresent = self.ObtenirMembresDejaPresent(_creneauHoraire)
-                    self.ListeChatterEnLigne(_streamer.lower(), _creneauHoraire,_listeMembresDejaPresent)
-                else :
-                    print("Absence de streamer dans streamer.txt > Pas de session Membres valide")
+            _creneauHoraire = self.DetermineCreneau()
+            _streamer = self.ObtenirStreamer(_creneauHoraire)
+        
+            if (_streamer) :
+                _listeMembresDejaPresent = self.ObtenirMembresDejaPresent(_creneauHoraire)
+                self.ListeChatterEnLigne(_streamer.lower(), _creneauHoraire,_listeMembresDejaPresent)
             else :
-                print(BYELLOW+BLACK+"Hors créneau :"+BBLACK+WHITE+"Il est "+RED+datetime.now().strftime("%Hh%M") +WHITE+" Les créneaux horaires ne sont pas atteint. patientez...")
-
+                print("Absence de streamer dans streamer.txt > Pas de session Membres valide")
         
         def ObtenirMembresDejaPresent(self,creneauHoraire):
             repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))

@@ -183,11 +183,7 @@ class GBoT(commands.Bot):
         '''
         renvois l ID du channel en fonction de l heure  local
         '''
-        channel = 0
         jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if (datetime.now().hour<1):
-            jour-=1  
-            if jour<0: jour=6
         if jour==0 : # Lundi
             channel = channelID["lundi"]
         elif jour==1 : # Mardi
@@ -200,7 +196,7 @@ class GBoT(commands.Bot):
             channel = channelID["vendredi"]
         elif jour==5 : # Samedi
             channel = channelID["samedi"]
-        elif jour==6 : # Samedi
+        elif jour==6 : # Dimanche
             channel = channelID["dimanche"]
             
         return channel
@@ -233,7 +229,16 @@ class GBoT(commands.Bot):
             self.connexionSQL.commit()
             self.connexionSQL.close()            
         else:
-            listeCreneau=["09h00 - 10h00 :",
+            listeCreneau=["00h00 - 01h00 :",
+                    "01h00 - 02h00 :",
+                    "02h00 - 03h00 :",
+                    "03h00 - 04h00 :",
+                    "04h00 - 05h00 :",
+                    "05h00 - 06h00 :",
+                    "06h00 - 07h00 :",
+                    "07h00 - 08h00 :",
+                    "08h00 - 09h00 :",
+                    "09h00 - 10h00 :",
                     "10h00 - 11h00 :",
                     "11h00 - 12h00 :",
                     "12h00 - 13h00 :",
@@ -247,8 +252,7 @@ class GBoT(commands.Bot):
                     "20h00 - 21h00 :",
                     "21h00 - 22h00 :",                          
                     "22h00 - 23h00 :",
-                    "23h00 - 00h00 :",
-                    "00h00 - 01h00 :"]
+                    "23h00 - 00h00 :"]
             self.connexionSQL =  sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
             curseur = self.connexionSQL.cursor()
             for creneau in listeCreneau:
@@ -276,7 +280,7 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Membres
-        if datetime.now().minute == 58:
+        if datetime.now().minute == 59:
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
@@ -443,11 +447,7 @@ class GBoT(commands.Bot):
         '''
         renvois le jour a prendre sous forme de texte
         '''
-        today =""
         jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if (datetime.now().hour<1):
-            jour-=1  
-            if jour<0: jour=6
         if jour==0 : # Lundi
             today = "lundi"
         elif jour==1 : # Mardi
