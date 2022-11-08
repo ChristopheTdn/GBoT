@@ -453,9 +453,9 @@ class GBoT(commands.Bot):
     async def recupereScoreMembres(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
-        jour = self.DetermineJour()
+        jour = self.determineJour()
         cur = self.connexionSQL.cursor()  
-        cur.execute("SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, score DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>0 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
         self.connexionSQL.close()
         
