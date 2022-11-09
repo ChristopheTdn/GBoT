@@ -296,6 +296,7 @@ class GBoT(commands.Bot):
             chatters = chatters.split("\n") 
             reponse =  "**"+chatters[0]+"**\n"              
             del chatters[0]
+            del chatters[0] #EFFACE LE STREAMER POUR NE PAS LUI COMPTER DE POINT
             for chatter in chatters:
                 if chatter !="" :
                     reponse += "`"+chatter+"`\n"
