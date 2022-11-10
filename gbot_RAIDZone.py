@@ -294,7 +294,7 @@ class GBoT(commands.Bot):
             cur.execute("SELECT * FROM 'Membre'")
             rows = cur.fetchall()                
             chatters = chatters.split("\n") 
-            reponse =  "**"+chatters[0]+"** : `" + chatters[1]+"`\n"              
+            reponse =  "**"+chatters[0]+"** : `" + chatters[1]+"`\n"  #Affiche le streamer            
             del chatters[0]
             del chatters[0] #EFFACE LE STREAMER POUR NE PAS LUI COMPTER DE POINT
             for chatter in chatters:
