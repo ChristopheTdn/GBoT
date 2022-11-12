@@ -8,15 +8,15 @@ from discord.ui import Select,View
 import os
 import logging
 from datetime import datetime,timedelta
-from session_RAIDZone import SessionRAIDZone
-
+import json
+import requests
 from colorama import Fore, Back
 from dotenv import load_dotenv
 import re 
 import asyncio
 import sqlite3
 
-description = '''Le GBoT pour le serveur RAIDZone  .
+description = '''Le GBoT pour le serveur RaidZ🅾️ne   .
 gere les streamers et leurs viewers en ajoutant quelques commandes sympas.'''
 
 # Parametres 
@@ -114,9 +114,7 @@ class GBoT(commands.Bot):
     async def appelSessionMembres(self,timing_sessionMembres):
         await self.wait_until_ready()
         while not self.is_closed():
-            print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session RAIDZone START')
-            SessionRAIDZone()
-            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session RAIDZone FIN\n')
+            self.sessionMembre()
             await asyncio.sleep(timing_sessionMembres) 
 
     def enregistreMembres(self):
@@ -542,10 +540,23 @@ class GBoT(commands.Bot):
         return message
                     
     async def afficheVIP(self,channel):
+        """
+        Affiche les titulaires d'un role VIP sur le channel du serveur discord
+        passé en paramètre
+
+        Args:
+            channel (Discord.channel): Channel du serveur discord sur lequel 
+                                       sera renvoyé le message d'information.
+        """
         await channel.send(self.recupereVIP())
         
     async def on_message(self, message):
+        """
+        Evennement levé à chaque message transmis sur le serveur Discord
 
+        Args:
+            message (Discord.message): objet message renvoyé par l API Discord
+        """
         admin = False
         # determine si la commande est lancée par un Admin
         if message.author.display_name == 'GToF_':
@@ -628,7 +639,136 @@ class GBoT(commands.Bot):
         message += "Les <@&1037343347905409116> obtiennent la prérogative de pouvoir reserver des créneaux en avance par rapport aux autres Membres.\n" 
         await channel.send(message) 
 
+    ####################################################
+    ##         SESSION sessionMembre (Acces disk)     ##
+    ####################################################
+    def sessionMembre(self):
+        _creneauHoraire = self.DetermineCreneau()
+        _streamer = self.ObtenirStreamer(_creneauHoraire)
+        print("\n"+datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session RaidZ🅾️ne  START')
+
+        if (_streamer) :
+            _listeMembresDejaPresent = self.ObtenirMembresDejaPresent(_creneauHoraire)
+            self.ListeChatterEnLigne(_streamer.lower(), _creneauHoraire,_listeMembresDejaPresent)
+        else :
+            print("Absence de streamer dans streamer.txt > Pas de session Membres valide")
+            
+        print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ': session RaidZ🅾️ne  FIN\n')
+        
+    def ObtenirMembresDejaPresent(self,creneauHoraire):
+        repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
+        os.makedirs(repertoire, exist_ok=True) 
+        name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
+        chatters =[]
+        if os.path.exists(name):
+            fichierLocal = open(name,"r")
+            chatters =  fichierLocal.read().split("\n")
+            del chatters[0]
+            chatters =  [x.lower() for x in chatters]
+            fichierLocal.close
+        return chatters
+    
+    def SauvegardeCreneauHoraire (self,creneauHoraire,listeMembres):
+        repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
+        os.makedirs(repertoire, exist_ok=True) 
+        name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
+        chatters =[]
+        fichierLocal = open(name,"w")
+        fichierLocal.write(creneauHoraire+'\n')
+        for Membre in listeMembres:
+            fichierLocal.write(Membre+'\n')
+        fichierLocal.close
+                
+        name = os.path.join(GBOTPATH,"chatters.txt")
+        chatters =[]
+        fichierLocal = open(name,"w")
+        fichierLocal.write(creneauHoraire+'\n')
+        for Membre in listeMembres:
+            fichierLocal.write(Membre+'\n')
+        fichierLocal.close
+        
+    def ListeChatterEnLigne(self, streamer, creneauHoraire, listeMembreDejaPresent):
+        '''
+        Renvois la liste des Membres en lignes
+        '''
+        # Recupere la liste des Membres
+        
+        fichierLocal = open(os.path.join(GBOTPATH,"Membres.txt"),"r")
+        listeMembres =  fichierLocal.read().split("\n")
+        listeMembres =  [x.lower() for x in listeMembres]
+        fichierLocal.close
+
+        # Recupere les chatters du STREAMER
+
+        url = requests.get('https://tmi.twitch.tv/group/user/'+streamer.lower()+'/chatters')
+        text = url.text  
+        data = json.loads(text) 
+        parseData = data['chatters']
+        chatters = parseData["broadcaster"]+parseData["vips"]+parseData["moderators"]+parseData["staff"]+parseData["admins"]+parseData["global_mods"]+parseData["viewers"]
+        chatters =  [x.lower() for x in chatters]
+
+        # créé une liste pour trouver les Membres present sur le stream
+
+        MembresEnLigne=[]
+        MembresHoraire=[]
+        
+        if len(chatters)>0 :
+            for Membre in listeMembreDejaPresent :      
+                if (Membre not in chatters) and (Membre != ""):
+                    MembresHoraire.append(Membre)
+                if (Membre in chatters):
+                    MembresEnLigne.append(Membre)
+            for chatter in chatters:
+                if (chatter in listeMembres) and (chatter not in listeMembreDejaPresent):
+                    MembresEnLigne.append(chatter)
+
+
+        print (GREEN ,"\n"+creneauHoraire , BLUE , streamer.upper())
+        print (YELLOW + str(len(chatters)) + WHITE + " viewers(s) sur le stream.")
+        print (RED + str(len(MembresEnLigne)) + WHITE + " Membre(s) sur le stream.")
+        print (RED + str(len(MembresEnLigne)+len(MembresHoraire)) + WHITE + " Membre(s) au total sur le creneau.")
+        
+        listeMembresFinale=[]        
+        listeMembresFinale.append(streamer) 
+        
+        print (WHITE,"\nMembre(s) deconnecté(s) durant le créneau : ",end="")
+        for Membre in MembresHoraire:
+            if Membre != 'vide' and Membre != streamer :
+                print (YELLOW,Membre+" ",end="")
+                listeMembresFinale.append(Membre)
+        print("\n")
+        
+        for Membre in MembresEnLigne :
+            if (Membre != streamer):
+                listeMembresFinale.append(Membre)
+                print (RED + "   > " + WHITE + Membre)
+
+        #SAUVEGARDE CRENEAU
+        self.SauvegardeCreneauHoraire(creneauHoraire,listeMembresFinale)
+
+    def ObtenirStreamer(self, creneauHoraire):
+        '''
+        recupere le nom du streamer en fonction du creneau horaire dans le fichier planning.txt
+        '''
+        streamer=""
+        fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
+        streamer = fichierLocal.read()
+        fichierLocal.close
+        if (streamer=="" or streamer == "vide"):
+            print ("\n"+ BRED + WHITE +"ERREUR :"+BBLACK+WHITE+" Impossible d'accéder au streaming du viewer. Veuillez vérifier si un streamer est bien présent sur ce créneau horaire dans le PLANNING. \nLe script continue de fonctionner..." )
+            self.SauvegardeCreneauHoraire(creneauHoraire,["vide"])
+        else :
+            return streamer  
+          
+    ######################################
+    ##         BASE DE DONNEE           ##
+    ######################################
     def initTableSql(self):
+        """        Initialise la base de donnée si elle n'existe pas
+        """
+
+        
+        
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         curseur = self.connexionSQL.cursor()
         curseur.execute('''CREATE TABLE IF NOT EXISTS GBoT(
@@ -682,6 +822,9 @@ if __name__ == "__main__":
 
     GBoT = GBoT()
 
+    ######################################
+    ##        GESTION COMMANDE /        ##
+    ######################################
     @GBoT.hybrid_command(name = "lurk", description = "Renvois la liste des Membres présents sur le creneau en cours.")
     @app_commands.guilds(GUILD)
     async def lurk(ctx:commands.Context):
@@ -738,12 +881,12 @@ if __name__ == "__main__":
         await ctx.defer(ephemeral=True)
         await GBoT.recupereScoreMembres(ctx)
 
-    @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord RAIDZone.")
+    @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord Raid Z🅾️ne .")
     @app_commands.guilds(GUILD)
     async def discord(ctx:commands.Context):  
         # Commande !discord
-        await ctx.send("Bonjour à toi jeune streamer/streameuse,\
-    tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"RAIDZone\"**__ est là pour te donner un coup de pouce.\n\
+        await ctx.send("Bonjour à toi streamer/streameuse,\
+    tu débutes dans le stream et tu galères à avoir ton affiliation ou à te créer une communauté ? Ne t'en fais pas le serveur Discord __**\"Raid Z🅾️ne \"**__ est là pour te donner un coup de pouce.\n\
     \nLe principe est simple, il y a plusieurs horaires sous forme de créneaux disponibles du lundi au vendredi, il suffit simplement de t'inscrire à l'un d'entre eux pour recevoir un raid et voir ton nombre de viewers grimper en flèche et ton tchat se déchaîner.\n\
     \nÉvidemment, l'entraide est le mot d'ordre, alors on compte également sur toi pour faire parti(e) de la chaîne des raids et être présent(e) sur les streams des autres personnes qui adhèrent à ce projet.\n\
     \nAllez n'attend pas plus longtemps et deviens toi aussi un Membre en rejoignant ce serveur ici : https://discord.gg/2EzvqkuB9d )\n")
