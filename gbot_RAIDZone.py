@@ -300,9 +300,10 @@ class GBoT(commands.Bot):
             cur.execute("SELECT * FROM 'Membre'")
             rows = cur.fetchall()                
             chatters = chatters.split("\n") 
-            reponse =  "**"+chatters[0]+"** : `" + chatters[1]+"`\n"  #Affiche le streamer            
+            reponse =  "**"+chatters[0]+"**  `" + chatters[1]+"`(streamer)\n"  #Affiche le streamer            
             del chatters[0]
             del chatters[0] #EFFACE LE STREAMER POUR NE PAS LUI COMPTER DE POINT
+            reponse += f"*{len(chatters)} streamers présent sur le créneau.*"
             for chatter in chatters:
                 if chatter !="" :
                     reponse += "`"+chatter+"`\n"
@@ -449,7 +450,7 @@ class GBoT(commands.Bot):
             await messageAEffacer.delete() 
         await channel.send(messageReponse)  
         if conflitCreneau:
-            await channel.send(f"<@{membre}> à généré un clonflit de creneaux. ({listeDemande})")  
+            await channel.send(f"<@{str(membre)}> à généré un conflit de creneaux. ({listeDemande})")  
                 
         
     def determineJour (self):
