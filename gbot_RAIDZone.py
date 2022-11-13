@@ -86,7 +86,7 @@ class GBoT(commands.Bot):
         await self.tree.sync(guild=GUILD)
         # create the background task and run it in the background
         self.bg_task_EnregistreMembres = self.loop.create_task(self.EnchaineProcedure(60))
-        self.bg_task_SessionMembres = self.loop.create_task(self.appelSessionMembres(240))
+        self.bg_task_SessionMembres = self.loop.create_task(self.sessionMembre(240))
 
     async def EnchaineProcedure(self, timing):
         
