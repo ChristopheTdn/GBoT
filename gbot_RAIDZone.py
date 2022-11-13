@@ -95,18 +95,18 @@ class GBoT(commands.Bot):
             
             # ENREGISTRE Membres
             self.enregistreMembres()
-            print("enregistre membre Ok")
+
             # RECUPERE PLANNING               
             await self.recuperePlanning()   
-            print("récupère planning Ok")
+
             
             # SAUVEGARDE PLANNING SUIR DISQUE                
             self.sauvePlanning() 
-            print("Sauve planning Ok")
+
             
             # ENVOIS MESSAGE 
             await self.envoisMessage()
-            print("Envois message chaque minute Ok")
+
 
             await asyncio.sleep(timing) 
 
@@ -129,7 +129,7 @@ class GBoT(commands.Bot):
                         chars = set(allowed_chars)
                         res = ''.join(filter(lambda x: x in chars, name))
                         if res != name :
-                            print (f"\n{RED}ATTENTION : {WHITE}l'utilisateur {RED+name+WHITE} renvoit une erreur sur son pseudo.")
+                            print (f"\n{RED}ATTENTION : {WHITE}l'utilisateur {RED+name+WHITE} renvoit une erreur sur son pseudo.\n")
                         fichier.write(res+"\n")
     def DetermineCreneau(self):
             
@@ -665,15 +665,15 @@ class GBoT(commands.Bot):
         
     def ObtenirMembresDejaPresent(self,creneauHoraire):
         repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
+        fichier = creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"
         os.makedirs(repertoire, exist_ok=True) 
-        name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
+        name = os.path.join(repertoire,fichier)
         chatters =[]
         if os.path.exists(name):
-            fichierLocal = open(name,"r")
-            chatters =  fichierLocal.read().split("\n")
-            del chatters[0]
-            chatters =  [x.lower() for x in chatters]
-            fichierLocal.close
+            with open(name,"r") as fichierLocal :
+                chatters =  fichierLocal.read().split("\n")
+                del chatters[0]
+                chatters =  [x.lower() for x in chatters]
         return chatters
     
     def SauvegardeCreneauHoraire (self,creneauHoraire,listeMembres):
@@ -681,19 +681,18 @@ class GBoT(commands.Bot):
         os.makedirs(repertoire, exist_ok=True) 
         name = os.path.join(repertoire,(creneauHoraire.replace(":","").replace(" ","")+"-chatters.txt"))
         chatters =[]
-        fichierLocal = open(name,"w")
-        fichierLocal.write(creneauHoraire+'\n')
-        for Membre in listeMembres:
-            fichierLocal.write(Membre+'\n')
-        fichierLocal.close
+        with open(name,"w") as fichierLocal :
+            fichierLocal.write(creneauHoraire+'\n')
+            for Membre in listeMembres:
+                fichierLocal.write(Membre+'\n')
                 
         name = os.path.join(GBOTPATH,"chatters.txt")
         chatters =[]
-        fichierLocal = open(name,"w")
-        fichierLocal.write(creneauHoraire+'\n')
-        for Membre in listeMembres:
-            fichierLocal.write(Membre+'\n')
-        fichierLocal.close
+        with open(name,"w") as fichierLocal :
+            fichierLocal.write(creneauHoraire+'\n')
+            for Membre in listeMembres:
+                fichierLocal.write(Membre+'\n')
+
         
     def ListeChatterEnLigne(self, streamer, creneauHoraire, listeMembreDejaPresent):
         '''
@@ -701,10 +700,9 @@ class GBoT(commands.Bot):
         '''
         # Recupere la liste des Membres
         
-        fichierLocal = open(os.path.join(GBOTPATH,"Membres.txt"),"r")
-        listeMembres =  fichierLocal.read().split("\n")
-        listeMembres =  [x.lower() for x in listeMembres]
-        fichierLocal.close
+        with open(os.path.join(GBOTPATH,"Membres.txt"),"r") as fichierLocal : 
+            listeMembres =  fichierLocal.read().split("\n")
+            listeMembres =  [x.lower() for x in listeMembres]
 
         # Recupere les chatters du STREAMER
 
@@ -729,7 +727,6 @@ class GBoT(commands.Bot):
             for chatter in chatters:
                 if (chatter in listeMembres) and (chatter not in listeMembreDejaPresent):
                     MembresEnLigne.append(chatter)
-
 
         print (GREEN ,"\n"+creneauHoraire , BLUE , streamer.upper())
         print (YELLOW + str(len(chatters)) + WHITE + " viewers(s) sur le stream.")
