@@ -98,12 +98,15 @@ class GBoT(commands.Bot):
             print("enregistre membre Ok")
             # RECUPERE PLANNING               
             await self.recuperePlanning()   
-
+            print("récupère planning Ok")
+            
             # SAUVEGARDE PLANNING SUIR DISQUE                
             self.sauvePlanning() 
-
+            print("Sauve planning Ok")
+            
             # ENVOIS MESSAGE 
-            await self.envoisMessage()  
+            await self.envoisMessage()
+            print("Envois message chaque minute Ok")
 
             await asyncio.sleep(timing) 
 
@@ -121,8 +124,13 @@ class GBoT(commands.Bot):
         with open(os.path.join(GBOTPATH,"Membres.txt"), "w") as fichier:
             for member in self.get_all_members():
                 if not member.bot :
-                        fichier.write(member.display_name.lower()+"\n")
-        print ('enregistre membre ok')
+                        name = member.display_name.lower()
+                        allowed_chars = ['a', 'b', 'c','d',"e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9","_"]
+                        chars = set(allowed_chars)
+                        res = ''.join(filter(lambda x: x in chars, name))
+                        if res != name :
+                            print (f"\n{RED}ATTENTION : {WHITE}l'utilisateur {RED+name+WHITE} renvoit une erreur sur son pseudo.")
+                        fichier.write(res+"\n")
     def DetermineCreneau(self):
             
         debut = datetime.now().strftime('%Hh00')
@@ -280,7 +288,7 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Membres
-        if datetime.now().minute == 59:
+        if datetime.now().minute == 25:
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
