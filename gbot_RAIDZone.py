@@ -85,8 +85,8 @@ class GBoT(commands.Bot):
     async def setup_hook(self) -> None:
         await self.tree.sync(guild=GUILD)
         # create the background task and run it in the background
-        self.bg_task_EnregistreMembres = self.loop.create_task(self.EnchaineProcedure(60))
-        self.bg_task_SessionMembres = self.loop.create_task(self.sessionMembre(240))
+        self.bg_task_ProcedureLancement = self.loop.create_task(self.EnchaineProcedure(60))
+        self.bg_task_SessionMembres = self.loop.create_task(self.appelSessionMembres(240))
 
     async def EnchaineProcedure(self, timing):
         
@@ -95,7 +95,7 @@ class GBoT(commands.Bot):
             
             # ENREGISTRE Membres
             self.enregistreMembres()
-            
+            print("enregistre membre Ok")
             # RECUPERE PLANNING               
             await self.recuperePlanning()   
 
@@ -122,7 +122,7 @@ class GBoT(commands.Bot):
             for member in self.get_all_members():
                 if not member.bot :
                         fichier.write(member.display_name.lower()+"\n")
-
+        print ('enregistre membre ok')
     def DetermineCreneau(self):
             
         debut = datetime.now().strftime('%Hh00')
@@ -751,9 +751,13 @@ class GBoT(commands.Bot):
         recupere le nom du streamer en fonction du creneau horaire dans le fichier planning.txt
         '''
         streamer=""
-        fichierLocal = open(os.path.join(GBOTPATH,"streamer.txt"),"r")
-        streamer = fichierLocal.read()
-        fichierLocal.close
+        try:        
+            with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichierLocal :
+                streamer = fichierLocal.read()
+        
+        except IOError:
+             streamer=""
+             
         if (streamer=="" or streamer == "vide"):
             print ("\n"+ BRED + WHITE +"ERREUR :"+BBLACK+WHITE+" Impossible d'accéder au streaming du viewer. Veuillez vérifier si un streamer est bien présent sur ce créneau horaire dans le PLANNING. \nLe script continue de fonctionner..." )
             self.SauvegardeCreneauHoraire(creneauHoraire,["vide"])
