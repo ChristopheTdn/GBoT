@@ -298,15 +298,16 @@ class GBoT(commands.Bot):
             self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
             cur = self.connexionSQL.cursor()
             cur.execute("SELECT * FROM 'Membre'")
-            rows = cur.fetchall()                
+            rows = cur.fetchall()
+            score = 0                
             chatters = chatters.split("\n") 
-            reponse =  "**"+chatters[0]+"**  `" + chatters[1]+"`(streamer)\n"  #Affiche le streamer            
+            reponse =  f"**{chatters[0]}** >`{chatters[1]}` (streamer)\n" 
             del chatters[0]
             del chatters[0] #EFFACE LE STREAMER POUR NE PAS LUI COMPTER DE POINT
-            reponse += f"*{len(chatters)} streamers présent sur le créneau.*"
             for chatter in chatters:
                 if chatter !="" :
-                    reponse += "`"+chatter+"`\n"
+                    reponse += f"▫️`{chatter}`\n"
+                    score += 1
                     flagTrouve = False
                     for Membre in rows :
                         if Membre[1] == chatter :
@@ -368,6 +369,7 @@ class GBoT(commands.Bot):
                                 score_dimanche +=1
                             scoreTotal = 1
                             cur.execute("INSERT OR REPLACE INTO Membre(pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) VALUES (?,?,?,?,?,?,?,?,?)",(chatter,score_lundi,score_mardi,score_mercredi,score_jeudi,score_vendredi,score_samedi,score_dimanche,scoreTotal))
+            reponse += f"*{score} streamers présents sur le créneau.*"
             await channel.send(reponse)
             
             self.connexionSQL.commit()
