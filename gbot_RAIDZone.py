@@ -288,7 +288,7 @@ class GBoT(commands.Bot):
                     
             # minute 58
             #Envois message horaire presence Membres
-        if datetime.now().minute == 25:
+        if datetime.now().minute == 59:
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
