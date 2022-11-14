@@ -56,6 +56,7 @@ channelID = {
     "presence":1037347680965365791,
     "annonce":1037341418722705468,
     "raid_en_cours": 1037340918937833543,
+    "blabla": 1037341465099120672,
     "guild":1037338719780339752,
     }
 
@@ -332,7 +333,7 @@ class GBoT(commands.Bot):
                 self.connexionSQL.close() 
                 print ("Stats Journalière remise a zero")
             
-        if datetime.now().minute == 59:
+        if datetime.now().minute == 20 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
@@ -346,6 +347,7 @@ class GBoT(commands.Bot):
             score = 0                
             chatters = chatters.split("\n") 
             reponse =  f"**{chatters[0]}** >`{chatters[1]}` (streamer)\n" 
+            streamer = chatters[1]
             del chatters[0]
             del chatters[0] #EFFACE LE STREAMER POUR NE PAS LUI COMPTER DE POINT
             for chatter in chatters:
@@ -414,12 +416,32 @@ class GBoT(commands.Bot):
                             scoreTotal = 1
                             cur.execute("INSERT OR REPLACE INTO Membre(pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) VALUES (?,?,?,?,?,?,?,?,?)",(chatter,score_lundi,score_mardi,score_mercredi,score_jeudi,score_vendredi,score_samedi,score_dimanche,scoreTotal))
             reponse += f"*{score} streamers présents sur le créneau.*"
-            await channel.send(reponse)
-            
             self.connexionSQL.commit()
-            self.connexionSQL.close() 
+            self.connexionSQL.close()
+            await channel.send(reponse)
+            hiScore = self.recupereHiScore()
+            if score>hiScore :
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+                cur = self.connexionSQL.cursor()
+                req = "UPDATE HIScore SET date = '"+datetime.now().strftime("%d-%m-%Y %Hh00")+"',\
+                    pseudo = '"+streamer+"',\
+                    score = "+str(score)+" WHERE id  = 1"
+                cur.execute(req)
+                self.connexionSQL.commit()
+                self.connexionSQL.close()
+                channel = self.get_channel(channelID["blabla"])
+                await self.afficheHiScore(channel)
+                print("fin")
 
-    
+    def recupereHiScore(self):
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+        cur = self.connexionSQL.cursor()  
+        cur.execute("SELECT id,date,pseudo,score FROM 'HIScore' WHERE id=1")
+        rows = cur.fetchone()
+        self.connexionSQL.close()
+        return rows[3]
+
+        
     def recupereScore(self):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
@@ -571,7 +593,21 @@ class GBoT(commands.Bot):
     
         await ctx.send(embed=embed)
     
-    
+    async def afficheHiScore(self,channel) :
+        # Recupere les scores pour les afficher une derniere fois
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+        jour = self.determineJour()
+        cur = self.connexionSQL.cursor()  
+        cur.execute("SELECT id,date,pseudo,score FROM 'HIScore' WHERE id=1")
+        rows = cur.fetchone()
+        self.connexionSQL.close()
+
+        embed = Embed(title="Nouveau Record !!!",colour= Colour.random())
+        embed.set_author(name=f"staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
+        embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/logo.png")
+        embed.add_field(name=f"__Score :__ {rows[3]} viewers le {rows[1]} chez {rows[2]}.",value="\u200b",  inline = False)
+        await channel.send(embed=embed)
+
     async def afficheScore(self,channel):
         
         reponse1,reponse2 = self.recupereScore()
@@ -871,6 +907,13 @@ class GBoT(commands.Bot):
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("22h00 - 23h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO GBoT (planning, streamer) VALUES (?,?)''', ("23h00 - 00h00 :"," "))
         curseur.execute('''INSERT OR REPLACE INTO Membre (pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) VALUES (?,?,?,?,?,?,?,?,?)''', ("none",0,0,0,0,0,0,0,0))
+        curseur.execute('''CREATE TABLE IF NOT EXISTS HIScore(
+            id INTEGER UNIQUE,
+            date TEXT,
+            pseudo TEXT,
+            score INTEGER
+            )''')
+        curseur.execute('''INSERT OR IGNORE INTO HIScore (id,date,pseudo,score) VALUES (?,?,?,?)''', (1,"none","none",0))
         self.connexionSQL.commit()
         self.connexionSQL.close()
 
@@ -995,6 +1038,16 @@ if __name__ == "__main__":
             • `/streamer` : renvois le streamer actuel du créneau horaire.\n\
             • `/VIP` : Obtenir la liste des VIP actuel.\n\
             ")
+    
+    @GBoT.hybrid_command(name = "hiscore", description = "Obtenir la date et le record de viewers du serveur pour un creneau.")
+    @app_commands.guilds(GUILD)
+    async def hiscore(ctx:commands.Context): 
+        # Commande !score
+        await ctx.defer(ephemeral=True)
+        await GBoT.afficheHiScore(ctx.channel)   
+    
+    
+    
     @GBoT.hybrid_command(name = "avatar", description = "affiche mon avatar.")
     @app_commands.guilds(GUILD)
     async def avatar(ctx:commands.Context): 
