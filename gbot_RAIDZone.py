@@ -597,9 +597,10 @@ class GBoT(commands.Bot):
         # Recupere les scores pour les afficher une derniere fois
         rows=self.recupereHiScore()
         embed = Embed(title="Nouveau Record !!!",colour= Colour.dark_red())
-        embed.set_author(name=f"staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
-        embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/logo.png")
+        embed.set_author(name=f"serveur RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
+        embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/guinness.png")
         embed.add_field(name=f"__Score :__",value=f" **{rows[3]}** viewers le {rows[1]} chez **{rows[2]}**.",  inline = False)
+        embed.set_footer(text="Staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
         await channel.send(embed=embed)
 
     async def afficheScore(self,channel):
@@ -1040,9 +1041,10 @@ if __name__ == "__main__":
         await ctx.defer(ephemeral=True)
         rows=GBoT.recupereHiScore()
         embed = Embed(title="Nouveau Record !!!",colour= Colour.dark_red())
-        embed.set_author(name=f"staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
-        embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/logo.png")
+        embed.set_author(name=f"serveur RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
+        embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/guinness.png")
         embed.add_field(name=f"__Score :__",value=f" **{rows[3]}** viewers le {rows[1]} chez **{rows[2]}**.",  inline = False)
+        embed.set_footer(text="Staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
         await ctx.send(embed=embed)     
     
     @GBoT.hybrid_command(name = "avatar", description = "affiche mon avatar.")
