@@ -333,7 +333,7 @@ class GBoT(commands.Bot):
                 self.connexionSQL.close() 
                 print ("Stats Journalière remise a zero")
             
-        if datetime.now().minute == 20 :
+        if datetime.now().minute == 59 :
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
@@ -419,7 +419,8 @@ class GBoT(commands.Bot):
             self.connexionSQL.commit()
             self.connexionSQL.close()
             await channel.send(reponse)
-            hiScore = self.recupereHiScore()
+            dataHiScore = self.recupereHiScore()
+            hiScore=dataHiScore[3]
             if score>hiScore :
                 self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
                 cur = self.connexionSQL.cursor()
@@ -437,10 +438,9 @@ class GBoT(commands.Bot):
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()  
         cur.execute("SELECT id,date,pseudo,score FROM 'HIScore' WHERE id=1")
-        rows = cur.fetchone()
+        dataHiScore = cur.fetchone()
         self.connexionSQL.close()
-        return rows[3]
-
+        return dataHiScore
         
     def recupereScore(self):
         # Recupere les scores pour les afficher une derniere fois
@@ -595,13 +595,7 @@ class GBoT(commands.Bot):
     
     async def afficheHiScore(self,channel) :
         # Recupere les scores pour les afficher une derniere fois
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
-        jour = self.determineJour()
-        cur = self.connexionSQL.cursor()  
-        cur.execute("SELECT id,date,pseudo,score FROM 'HIScore' WHERE id=1")
-        rows = cur.fetchone()
-        self.connexionSQL.close()
-
+        rows=self.recupereHiScore()
         embed = Embed(title="Nouveau Record !!!",colour= Colour.random())
         embed.set_author(name=f"staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
         embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/logo.png")
@@ -1044,9 +1038,12 @@ if __name__ == "__main__":
     async def hiscore(ctx:commands.Context): 
         # Commande !score
         await ctx.defer(ephemeral=True)
-        await GBoT.afficheHiScore(ctx.channel)   
-    
-    
+        rows=GBoT.recupereHiScore()
+        embed = Embed(title="Nouveau Record !!!",colour= Colour.random())
+        embed.set_author(name=f"staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
+        embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/logo.png")
+        embed.add_field(name=f"__Score :__ {rows[3]} viewers le {rows[1]} chez {rows[2]}.",value="\u200b",  inline = False)
+        await ctx.send(embed=embed)     
     
     @GBoT.hybrid_command(name = "avatar", description = "affiche mon avatar.")
     @app_commands.guilds(GUILD)
