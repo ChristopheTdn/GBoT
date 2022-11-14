@@ -16,7 +16,7 @@ import re
 import asyncio
 import sqlite3
 
-description = '''Le GBoT pour le serveur RaidZ🅾️ne   .
+description = '''Le GBoT pour le serveur RaidZ🅾️ne.
 gere les streamers et leurs viewers en ajoutant quelques commandes sympas.'''
 
 # Parametres 
@@ -596,10 +596,10 @@ class GBoT(commands.Bot):
     async def afficheHiScore(self,channel) :
         # Recupere les scores pour les afficher une derniere fois
         rows=self.recupereHiScore()
-        embed = Embed(title="Nouveau Record !!!",colour= Colour.random())
+        embed = Embed(title="Nouveau Record !!!",colour= Colour.dark_red())
         embed.set_author(name=f"staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
         embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/logo.png")
-        embed.add_field(name=f"__Score :__ {rows[3]} viewers le {rows[1]} chez {rows[2]}.",value="\u200b",  inline = False)
+        embed.add_field(name=f"__Score :__",value=f" **{rows[3]}** viewers le {rows[1]} chez **{rows[2]}**.",  inline = False)
         await channel.send(embed=embed)
 
     async def afficheScore(self,channel):
@@ -1039,10 +1039,10 @@ if __name__ == "__main__":
         # Commande !score
         await ctx.defer(ephemeral=True)
         rows=GBoT.recupereHiScore()
-        embed = Embed(title="Nouveau Record !!!",colour= Colour.random())
+        embed = Embed(title="Nouveau Record !!!",colour= Colour.dark_red())
         embed.set_author(name=f"staff RaidZ🅾️ne",icon_url="https://www.su66.fr/raidzone/logo.png")
         embed.set_thumbnail(url=f"https://www.su66.fr/raidzone/logo.png")
-        embed.add_field(name=f"__Score :__ {rows[3]} viewers le {rows[1]} chez {rows[2]}.",value="\u200b",  inline = False)
+        embed.add_field(name=f"__Score :__",value=f" **{rows[3]}** viewers le {rows[1]} chez **{rows[2]}**.",  inline = False)
         await ctx.send(embed=embed)     
     
     @GBoT.hybrid_command(name = "avatar", description = "affiche mon avatar.")
