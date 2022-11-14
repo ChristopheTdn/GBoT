@@ -286,8 +286,52 @@ class GBoT(commands.Bot):
                 reponse = "**`Il n y a pas de Raid Actuellement**"
                 await channel.send(reponse)
                     
-            # minute 58
-            #Envois message horaire presence Membres
+            # il est minuit ?
+            # reinitialise les scores du jours à 0
+            if datetime.now().hour == 0 :
+                self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+                cur = self.connexionSQL.cursor()
+                cur.execute("SELECT * FROM 'Membre'")
+                rows = cur.fetchall()
+                jour = self.determineJour()
+                for Membre in rows :
+                    pseudo = Membre[1]
+                    score_lundi = Membre[2]
+                    score_mardi = Membre[3]
+                    score_mercredi = Membre[4]
+                    score_jeudi = Membre[5]
+                    score_vendredi = Membre[6]
+                    score_samedi = Membre[7]
+                    score_dimanche = Membre [8]
+                    if jour =="lundi" :
+                        score_lundi = 0
+                    elif jour == "mardi" :
+                        score_mardi = 0
+                    elif jour == "mercredi" :
+                        score_mercredi = 0
+                    elif jour == "jeudi" :
+                        score_jeudi = 0
+                    elif jour == "vendredi" :
+                        score_vendredi = 0
+                    elif jour == "samedi" :
+                        score_samedi = 0
+                    elif jour == "dimanche" :
+                        score_dimanche = 0
+                    scoreTotal = score_lundi+score_mardi+score_mercredi+score_jeudi+score_vendredi+score_samedi+score_dimanche
+                    req = "UPDATE Membre SET lundi = "+str(score_lundi)+\
+                                ",mardi = "+str(score_mardi)+\
+                                ",mercredi = "+str(score_mercredi)+\
+                                ",jeudi = "+str(score_jeudi)+\
+                                ",vendredi = "+str(score_vendredi)+\
+                                ",samedi = "+str(score_samedi)+\
+                                ",dimanche = "+str(score_dimanche)+\
+                                ",total = "+str(scoreTotal)+ " WHERE pseudo  = '"+pseudo+"'"
+                    cur.execute(req)
+                
+                self.connexionSQL.commit()
+                self.connexionSQL.close() 
+                print ("Stats Journalière remise a zero")
+            
         if datetime.now().minute == 59:
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
