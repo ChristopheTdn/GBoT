@@ -82,7 +82,7 @@ class GBoT(commands.Bot):
 
         # Initialise Table SQL
         self.initTableSql() 
-        
+
     async def setup_hook(self) -> None:
         await self.tree.sync(guild=GUILD)
         # create the background task and run it in the background
@@ -114,161 +114,6 @@ class GBoT(commands.Bot):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
-
-    async def appelSessionMembres(self,timing_sessionMembres):
-        await self.wait_until_ready()
-        while not self.is_closed():
-            self.sessionMembre()
-            await asyncio.sleep(timing_sessionMembres) 
-
-    def enregistreMembres(self):
-        with open(os.path.join(GBOTPATH,"Membres.txt"), "w") as fichier:
-            for member in self.get_all_members():
-                if not member.bot :
-                        name = member.display_name.lower()
-                        allowed_chars = ['a', 'b', 'c','d',"e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9","_"]
-                        chars = set(allowed_chars)
-                        res = ''.join(filter(lambda x: x in chars, name))
-                        if res != name :
-                            print (f"\n{RED}ATTENTION : {WHITE}l'utilisateur {RED+name+WHITE} renvoit une erreur sur son pseudo.\n")
-                        fichier.write(res+"\n")
-    def DetermineCreneau(self):
-            
-        debut = datetime.now().strftime('%Hh00')
-        fin = (datetime.now()+timedelta(hours=1)).strftime('%Hh00')
-        return (debut + " - "+ fin +" :") 
-    
-    def sauvePlanning(self):
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite")) 
-        creneauActuel = self.DetermineCreneau()
-        cur = self.connexionSQL.cursor()
-        cur.execute("SELECT * FROM 'GBoT'")
-        rows = cur.fetchall()
-        planning = ""
-        streamer = "vide"
-        listeCreneauJour=["00h00 - 01h00 :",
-                    "01h00 - 02h00 :",
-                    "02h00 - 03h00 :",
-                    "03h00 - 04h00 :",
-                    "04h00 - 05h00 :",
-                    "05h00 - 06h00 :",
-                    "06h00 - 07h00 :",
-                    "07h00 - 08h00 :",
-                    "08h00 - 09h00 :",
-                    "09h00 - 10h00 :",
-                    "10h00 - 11h00 :",
-                    "11h00 - 12h00 :",
-                    "12h00 - 13h00 :",
-                    "13h00 - 14h00 :",
-                    "14h00 - 15h00 :",
-                    "15h00 - 16h00 :",
-                    "16h00 - 17h00 :",
-                    "17h00 - 18h00 :",
-                    "18h00 - 19h00 :",
-                    "19h00 - 20h00 :",
-                    "20h00 - 21h00 :",
-                    "21h00 - 22h00 :",                          
-                    "22h00 - 23h00 :",
-                    "23h00 - 00h00 :"]
-
-        for creneau in rows :
-            if creneau[1] in listeCreneauJour :
-                planning += creneau[1]+" "+creneau[2]+"\n"
-                if creneau[1] == creneauActuel :
-                    streamer = creneau[2]
-        self.connexionSQL.commit()
-        self.connexionSQL.close()
-
-        with open(os.path.join(GBOTPATH,"planning.txt"), "w") as fichier:
-                fichier.write(planning)
-        with open(os.path.join(GBOTPATH,"streamer.txt"), "w") as fichier2:
-                fichier2.write(streamer)                
-        if streamer == "vide" :
-            with open(os.path.join(GBOTPATH,"chatters.txt"), "w") as fichier3:
-                fichier3.write("vide")          
-        return
-            
-    def recupereIDChannelPlanning(self):
-        '''
-        renvois l ID du channel en fonction de l heure  local
-        '''
-        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if jour==0 : # Lundi
-            channel = channelID["lundi"]
-        elif jour==1 : # Mardi
-            channel = channelID["mardi"]
-        elif jour==2 : # Mercredi
-            channel = channelID["mercredi"]
-        elif jour==3 : # Jeudi
-            channel = channelID["jeudi"]
-        elif jour==4 : # Vendredi
-            channel = channelID["vendredi"]
-        elif jour==5 : # Samedi
-            channel = channelID["samedi"]
-        elif jour==6 : # Dimanche
-            channel = channelID["dimanche"]
-            
-        return channel
-
-    async def recuperePlanning(self):
-        _channel = self.recupereIDChannelPlanning()
-        if (_channel != 0) :
-            channel = self.get_channel(_channel)
-            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=1,oldest_first=True)]
-            message = messages[0].content
-            ligneMessage = message.split("\n")
-            
-            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite")) 
-            curseur = self.connexionSQL.cursor()
-            
-            for ligne in  ligneMessage :
-                ligne = re.sub(r' +', ' ', ligne.strip()) #remplace les multiples espaces par un seul
-                ligneCut = ligne.split(" ")
-                
-                nom_streamer = ""
-                if len(ligneCut) > 4 :
-                    if ("<@" in ligneCut[4]) :
-                        identity =ligneCut[4].replace("<@","").replace(">","")
-                        user= get(self.get_all_members(),id=(int(identity)))                   
-                        ligneCut[4] = user.display_name
-                    nom_streamer = ligneCut[4] 
-                sqlreq ="UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'"
-                curseur.execute(sqlreq)
-
-            self.connexionSQL.commit()
-            self.connexionSQL.close()            
-        else:
-            listeCreneau=["00h00 - 01h00 :",
-                    "01h00 - 02h00 :",
-                    "02h00 - 03h00 :",
-                    "03h00 - 04h00 :",
-                    "04h00 - 05h00 :",
-                    "05h00 - 06h00 :",
-                    "06h00 - 07h00 :",
-                    "07h00 - 08h00 :",
-                    "08h00 - 09h00 :",
-                    "09h00 - 10h00 :",
-                    "10h00 - 11h00 :",
-                    "11h00 - 12h00 :",
-                    "12h00 - 13h00 :",
-                    "13h00 - 14h00 :",
-                    "14h00 - 15h00 :",
-                    "15h00 - 16h00 :",
-                    "16h00 - 17h00 :",
-                    "17h00 - 18h00 :",
-                    "18h00 - 19h00 :",
-                    "19h00 - 20h00 :",
-                    "20h00 - 21h00 :",
-                    "21h00 - 22h00 :",                          
-                    "22h00 - 23h00 :",
-                    "23h00 - 00h00 :"]
-            self.connexionSQL =  sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
-            curseur = self.connexionSQL.cursor()
-            for creneau in listeCreneau:
-                curseur.execute("UPDATE GBoT SET streamer = 'vide' WHERE planning = '"+creneau+"'")
-            self.connexionSQL.commit()
-            self.connexionSQL.close()
-               
     async def envoisMessage(self):
         # minute 1    
         #Envois message horaire Streamer en ligne Membres  
@@ -434,6 +279,160 @@ class GBoT(commands.Bot):
                 await self.afficheHiScore(channel)
                 print("fin")
 
+    async def appelSessionMembres(self,timing_sessionMembres):
+        await self.wait_until_ready()
+        while not self.is_closed():
+            self.sessionMembre()
+            await asyncio.sleep(timing_sessionMembres) 
+
+    def enregistreMembres(self):
+        with open(os.path.join(GBOTPATH,"Membres.txt"), "w") as fichier:
+            for member in self.get_all_members():
+                if not member.bot :
+                        name = member.display_name.lower()
+                        allowed_chars = ['a', 'b', 'c','d',"e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9","_"]
+                        chars = set(allowed_chars)
+                        res = ''.join(filter(lambda x: x in chars, name))
+                        if res != name :
+                            print (f"\n{RED}ATTENTION : {WHITE}l'utilisateur {RED+name+WHITE} renvoit une erreur sur son pseudo.\n")
+                        fichier.write(res+"\n")
+    def DetermineCreneau(self):
+            
+        debut = datetime.now().strftime('%Hh00')
+        fin = (datetime.now()+timedelta(hours=1)).strftime('%Hh00')
+        return (debut + " - "+ fin +" :") 
+
+    def sauvePlanning(self):
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite")) 
+        creneauActuel = self.DetermineCreneau()
+        cur = self.connexionSQL.cursor()
+        cur.execute("SELECT * FROM 'GBoT'")
+        rows = cur.fetchall()
+        planning = ""
+        streamer = "vide"
+        listeCreneauJour=["00h00 - 01h00 :",
+                    "01h00 - 02h00 :",
+                    "02h00 - 03h00 :",
+                    "03h00 - 04h00 :",
+                    "04h00 - 05h00 :",
+                    "05h00 - 06h00 :",
+                    "06h00 - 07h00 :",
+                    "07h00 - 08h00 :",
+                    "08h00 - 09h00 :",
+                    "09h00 - 10h00 :",
+                    "10h00 - 11h00 :",
+                    "11h00 - 12h00 :",
+                    "12h00 - 13h00 :",
+                    "13h00 - 14h00 :",
+                    "14h00 - 15h00 :",
+                    "15h00 - 16h00 :",
+                    "16h00 - 17h00 :",
+                    "17h00 - 18h00 :",
+                    "18h00 - 19h00 :",
+                    "19h00 - 20h00 :",
+                    "20h00 - 21h00 :",
+                    "21h00 - 22h00 :",                          
+                    "22h00 - 23h00 :",
+                    "23h00 - 00h00 :"]
+
+        for creneau in rows :
+            if creneau[1] in listeCreneauJour :
+                planning += creneau[1]+" "+creneau[2]+"\n"
+                if creneau[1] == creneauActuel :
+                    streamer = creneau[2]
+        self.connexionSQL.commit()
+        self.connexionSQL.close()
+
+        with open(os.path.join(GBOTPATH,"planning.txt"), "w") as fichier:
+                fichier.write(planning)
+        with open(os.path.join(GBOTPATH,"streamer.txt"), "w") as fichier2:
+                fichier2.write(streamer)                
+        if streamer == "vide" :
+            with open(os.path.join(GBOTPATH,"chatters.txt"), "w") as fichier3:
+                fichier3.write("vide")          
+        return
+
+    def recupereIDChannelPlanning(self):
+        '''
+        renvois l ID du channel en fonction de l heure  local
+        '''
+        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
+        if jour==0 : # Lundi
+            channel = channelID["lundi"]
+        elif jour==1 : # Mardi
+            channel = channelID["mardi"]
+        elif jour==2 : # Mercredi
+            channel = channelID["mercredi"]
+        elif jour==3 : # Jeudi
+            channel = channelID["jeudi"]
+        elif jour==4 : # Vendredi
+            channel = channelID["vendredi"]
+        elif jour==5 : # Samedi
+            channel = channelID["samedi"]
+        elif jour==6 : # Dimanche
+            channel = channelID["dimanche"]
+            
+        return channel
+
+    async def recuperePlanning(self):
+        _channel = self.recupereIDChannelPlanning()
+        if (_channel != 0) :
+            channel = self.get_channel(_channel)
+            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=1,oldest_first=True)]
+            message = messages[0].content
+            ligneMessage = message.split("\n")
+            
+            self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite")) 
+            curseur = self.connexionSQL.cursor()
+            
+            for ligne in  ligneMessage :
+                ligne = re.sub(r' +', ' ', ligne.strip()) #remplace les multiples espaces par un seul
+                ligneCut = ligne.split(" ")
+                
+                nom_streamer = ""
+                if len(ligneCut) > 4 :
+                    if ("<@" in ligneCut[4]) :
+                        identity =ligneCut[4].replace("<@","").replace(">","")
+                        user= get(self.get_all_members(),id=(int(identity)))                   
+                        ligneCut[4] = user.display_name
+                    nom_streamer = ligneCut[4] 
+                sqlreq ="UPDATE GBoT SET streamer = '"+nom_streamer.lower()+"' WHERE planning = '"+ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+"'"
+                curseur.execute(sqlreq)
+
+            self.connexionSQL.commit()
+            self.connexionSQL.close()            
+        else:
+            listeCreneau=["00h00 - 01h00 :",
+                    "01h00 - 02h00 :",
+                    "02h00 - 03h00 :",
+                    "03h00 - 04h00 :",
+                    "04h00 - 05h00 :",
+                    "05h00 - 06h00 :",
+                    "06h00 - 07h00 :",
+                    "07h00 - 08h00 :",
+                    "08h00 - 09h00 :",
+                    "09h00 - 10h00 :",
+                    "10h00 - 11h00 :",
+                    "11h00 - 12h00 :",
+                    "12h00 - 13h00 :",
+                    "13h00 - 14h00 :",
+                    "14h00 - 15h00 :",
+                    "15h00 - 16h00 :",
+                    "16h00 - 17h00 :",
+                    "17h00 - 18h00 :",
+                    "18h00 - 19h00 :",
+                    "19h00 - 20h00 :",
+                    "20h00 - 21h00 :",
+                    "21h00 - 22h00 :",                          
+                    "22h00 - 23h00 :",
+                    "23h00 - 00h00 :"]
+            self.connexionSQL =  sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+            curseur = self.connexionSQL.cursor()
+            for creneau in listeCreneau:
+                curseur.execute("UPDATE GBoT SET streamer = 'vide' WHERE planning = '"+creneau+"'")
+            self.connexionSQL.commit()
+            self.connexionSQL.close()
+
     def recupereHiScore(self):
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()  
@@ -441,8 +440,8 @@ class GBoT(commands.Bot):
         dataHiScore = cur.fetchone()
         self.connexionSQL.close()
         return dataHiScore
-        
-    def recupereScore(self):
+
+    def recupereScoresMembres(self):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()  
@@ -474,6 +473,7 @@ class GBoT(commands.Bot):
             return jour
         else:
             return "False"
+
     async def resa_renvoisCreneau(self, jour):
         """Renvois la liste des creneau disponible pour un jour donné"""
         channel = self.get_channel(channelID[jour])
@@ -520,6 +520,51 @@ class GBoT(commands.Bot):
         if conflitCreneau:
             await channel.send(f"<@{str(membre)}> à généré un conflit de creneaux. ({listeDemande})")  
                 
+    def resa_droitMembreNonValide(self,auteur,jourResa):
+        auteur = str(auteur)
+        auteur = auteur.lower()
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+        cur = self.connexionSQL.cursor()  
+        cur.execute(f"SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE pseudo='{auteur}'")
+        dataMembre = cur.fetchone()
+        pseudo = dataMembre[0]
+        score = dataMembre[1] + dataMembre[2] + dataMembre[3] + dataMembre[4] + dataMembre[5] + dataMembre[6] + dataMembre[7]
+        self.connexionSQL.close()
+
+        dayStart = (datetime.now().weekday())
+        jourResaID = {
+            "lundi": 0,
+            "mardi": 1,
+            "mercredi": 2,
+            "jeudi": 3,
+            "vendredi": 4,
+            "samedi": 5,
+            "dimanche": 6
+            }
+        
+        jourResa= jourResaID[jourResa]
+        dayDelta=dayStart  
+
+        if score > 30 :
+            auteurDroit = 7
+        elif score > 20 :
+            auteurDroit = 3
+        elif score > 10 :
+            auteurDroit = 2
+        elif score > 5 :
+            auteurDroit = 1
+        else :
+            return True 
+                
+        for index in range(auteurDroit):
+            dayDelta += 1
+            if dayDelta>6:
+                dayDelta = 0
+        if dayDelta >= jourResa :
+            return False
+        else :
+            return True
+
         
     def determineJour (self):
         '''
@@ -541,8 +586,8 @@ class GBoT(commands.Bot):
         elif jour==6 : # Samedi
             today = "dimanche"
         return today   
-
-    async def recupereScoreMembres(self,ctx):
+    
+    async def commande_afficheScoreMembre(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         jour = self.determineJour()
@@ -605,7 +650,7 @@ class GBoT(commands.Bot):
 
     async def afficheScore(self,channel):
         
-        reponse1,reponse2 = self.recupereScore()
+        reponse1,reponse2 = self.recupereScoresMembres()
 
         await channel.send('\n:medal: __**Score des Membres présent sur la journée :**__ *(Score journée --> Total de la semaine)*\n')
         await channel.send(reponse1)
@@ -753,7 +798,7 @@ class GBoT(commands.Bot):
                 del chatters[0]
                 chatters =  [x.lower() for x in chatters]
         return chatters
-    
+
     def SauvegardeCreneauHoraire (self,creneauHoraire,listeMembres):
         repertoire = os.path.join(GBOTPATH,"data",datetime.now().strftime("%Y-%m-%d"))
         os.makedirs(repertoire, exist_ok=True) 
@@ -771,7 +816,6 @@ class GBoT(commands.Bot):
             for Membre in listeMembres:
                 fichierLocal.write(Membre+'\n')
 
-        
     def ListeChatterEnLigne(self, streamer, creneauHoraire, listeMembreDejaPresent):
         '''
         Renvois la liste des Membres en lignes
@@ -846,16 +890,13 @@ class GBoT(commands.Bot):
             self.SauvegardeCreneauHoraire(creneauHoraire,["vide"])
         else :
             return streamer  
-          
+
     ######################################
     ##         BASE DE DONNEE           ##
     ######################################
     def initTableSql(self):
         """        Initialise la base de donnée si elle n'existe pas
         """
-
-        
-        
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         curseur = self.connexionSQL.cursor()
         curseur.execute('''CREATE TABLE IF NOT EXISTS GBoT(
@@ -960,7 +1001,7 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def scoregeneral(ctx:commands.Context):
         # Commande !score
-        reponse1, reponse2 = GBoT.recupereScore()
+        reponse1, reponse2 = GBoT.recupereScoresMembres()
         await ctx.send('\n:medal: __**Score des Membres :**__ *( sur 7 jours )*\n')
         if reponse1 != "":
             await ctx.send(reponse1)
@@ -973,7 +1014,7 @@ if __name__ == "__main__":
     async def score(ctx:commands.Context): 
         # Commande !score
         await ctx.defer(ephemeral=True)
-        await GBoT.recupereScoreMembres(ctx)
+        await GBoT.commande_afficheScoreMembre(ctx)
 
     @GBoT.hybrid_command(name = "discord", description = "Obtenir le lien à diffuser pour rejoindre le discord Raid Z🅾️ne .")
     @app_commands.guilds(GUILD)
@@ -1070,7 +1111,19 @@ if __name__ == "__main__":
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
             embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi`, `samedi` et `dimanche`.",  inline = False)
             embed.set_footer(text = 'Généré par GBoT')
-            await ctx.send(embed=embed)          
+            await ctx.send(embed=embed) 
+        elif GBoT.resa_droitMembreNonValide(ctx.author.display_name,jour) :
+            embed = Embed(title="ERREUR :",colour= Colour.red())
+            embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
+            embed.add_field(name="Tes droits sont restreints",value="Tu n'as pas accés à cette journée de réservation car tu n'as pas cumulé assez de point pour reserver sur cette période.\n\
+                            ▫️ **score >5** : accés réservation pour le lendemain.\n\
+                            ▫️ **score >10** : accés réservation les 2 jours suivants\n\
+                            ▫️ **score >20** : accés réservation les 3 jours suivants\n\
+                            ▫️ **score >30** : accés réservation sur la semaine suivante\n\
+                            1 pt se gagne quand vous etes chez un streamer du serveur durant son créneau. Vous ne marquez pas de point quand vous etes le streamer.\n\
+                            Pour vonnaitre votre score actuel, tapez `/score` dans le channel <#1037341465099120672>.",  inline = False)
+            embed.set_footer(text = 'Généré par GBoT')
+            await ctx.send(embed=embed)         
         else:
             listeCreneaux = await GBoT.resa_renvoisCreneau(jour)
             listeOption = []
