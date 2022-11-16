@@ -765,7 +765,7 @@ class GBoT(commands.Bot):
         message += ":medal: Le top viewers des Sparts Suprêmes ::medal:\n\n" 
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()
-        cur.execute("SELECT lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        cur.execute("SELECT membre,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
         place = 1
         scoreTotal = 0
