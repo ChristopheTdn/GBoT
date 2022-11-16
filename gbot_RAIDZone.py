@@ -83,11 +83,46 @@ class GBoT(commands.Bot):
         # Initialise Table SQL
         self.initTableSql() 
 
+    ##################################
+    ##     EVENEMENTS DISCORD.PY    ##
+    ##################################
+    async def on_ready(self):
+        """
+        S'affiche quand l'Initialisation Bot est terminé
+        """
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        print('------')
+        
     async def setup_hook(self) -> None:
+        """
+        Initialise les taches tournant en tache de fond et appelable régulierement selon un timing en seconde
+        """
         await self.tree.sync(guild=GUILD)
         # create the background task and run it in the background
         self.bg_task_ProcedureLancement = self.loop.create_task(self.EnchaineProcedure(60))
         self.bg_task_SessionMembres = self.loop.create_task(self.appelSessionMembres(240))
+
+    async def on_message(self, message):
+        """
+        Evennement levé à chaque message transmis sur le serveur Discord
+
+        Args:
+            message (Discord.message): objet message renvoyé par l API Discord
+        """
+        admin = False
+        # determine si la commande est lancée par un Admin
+        if message.author.display_name == 'GToF_':
+            admin=True
+            
+        if admin and message.content.startswith(">nomine"):
+                await self.distributionRole(message.channel)
+        # Commande >efface
+        if admin and message.content.startswith(">efface"):
+            channel = self.get_channel(message.channel.id)
+            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
+            for messageAEffacer in messages :
+                await messageAEffacer.delete()       
+
 
     async def EnchaineProcedure(self, timing):
         
@@ -111,9 +146,6 @@ class GBoT(commands.Bot):
 
             await asyncio.sleep(timing) 
 
-    async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
     async def envoisMessage(self):
         # minute 1    
         #Envois message horaire Streamer en ligne Membres  
@@ -433,13 +465,6 @@ class GBoT(commands.Bot):
             self.connexionSQL.commit()
             self.connexionSQL.close()
 
-    def recupereHiScore(self):
-        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
-        cur = self.connexionSQL.cursor()  
-        cur.execute("SELECT id,date,pseudo,score FROM 'HIScore' WHERE id=1")
-        dataHiScore = cur.fetchone()
-        self.connexionSQL.close()
-        return dataHiScore
 
     def recupereScoresMembres(self):
         # Recupere les scores pour les afficher une derniere fois
@@ -467,14 +492,17 @@ class GBoT(commands.Bot):
 
         return (reponse1,reponse2)
 
-    def resa_verifjour(self,jour):
+    ####################################
+    ##   REPONSE APPEL PAR COMMANDE / ##
+    ####################################    
+    def commande_resa_verifjour(self,jour):
         listeJour = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
         if jour in listeJour :
             return jour
         else:
             return "False"
 
-    async def resa_renvoisCreneau(self, jour):
+    async def commande_resa_renvoisCreneau(self, jour):
         """Renvois la liste des creneau disponible pour un jour donné"""
         channel = self.get_channel(channelID[jour])
         messages = [MessagesChannel async for MessagesChannel in channel.history(limit=1,oldest_first=True)]
@@ -491,7 +519,7 @@ class GBoT(commands.Bot):
                 listeCreneaux.append(creneau)
         return listeCreneaux     
     
-    async def resa_valideCreneaux(self,membre,jour,listeDemande):
+    async def commande_resa_valideCreneaux(self,membre,jour,listeDemande):
         """Inscrit la liste des creneaux fourni pour un jour donné"""
         channel = self.get_channel(channelID[jour])
         messages = [MessagesChannel async for MessagesChannel in channel.history(limit=1,oldest_first=True)]
@@ -520,7 +548,7 @@ class GBoT(commands.Bot):
         if conflitCreneau:
             await channel.send(f"<@{str(membre)}> à généré un conflit de creneaux. ({listeDemande})")  
                 
-    def resa_droitMembreNonValide(self,auteur,jourResa):
+    def commande_resa_droitMembreNonValide(self,auteur,jourResa):
         auteur = str(auteur)
         auteur = auteur.lower()
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
@@ -565,28 +593,6 @@ class GBoT(commands.Bot):
         else :
             return True
 
-        
-    def determineJour (self):
-        '''
-        renvois le jour a prendre sous forme de texte
-        '''
-        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
-        if jour==0 : # Lundi
-            today = "lundi"
-        elif jour==1 : # Mardi
-            today = "mardi"
-        elif jour==2 : # Mercredi
-            today = "mercredi"
-        elif jour==3 : # Jeudi
-            today = "jeudi"
-        elif jour==4 : # Vendredi
-            today = "vendredi"
-        elif jour==5 : # Samedi
-            today = "samedi"
-        elif jour==6 : # Samedi
-            today = "dimanche"
-        return today   
-    
     async def commande_afficheScoreMembre(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
@@ -637,6 +643,40 @@ class GBoT(commands.Bot):
         embed.add_field(name=":medal: Le top score de la semaine: :medal:",value = reponse,inline = False) 
     
         await ctx.send(embed=embed)
+            
+
+    ####################################
+    ##   FONCTIONS  COMMUNES          ##
+    ####################################  
+    
+    def recupereHiScore(self):
+        self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
+        cur = self.connexionSQL.cursor()  
+        cur.execute("SELECT id,date,pseudo,score FROM 'HIScore' WHERE id=1")
+        dataHiScore = cur.fetchone()
+        self.connexionSQL.close()
+        return dataHiScore
+
+    def determineJour (self):
+        '''
+        renvois le jour a prendre sous forme de texte
+        '''
+        jour = (datetime.now().weekday()) # Renvoie le jour de la semaine sous forme d'entier, lundi étant à 0 et dimanche à 6.
+        if jour==0 : # Lundi
+            today = "lundi"
+        elif jour==1 : # Mardi
+            today = "mardi"
+        elif jour==2 : # Mercredi
+            today = "mercredi"
+        elif jour==3 : # Jeudi
+            today = "jeudi"
+        elif jour==4 : # Vendredi
+            today = "vendredi"
+        elif jour==5 : # Samedi
+            today = "samedi"
+        elif jour==6 : # Samedi
+            today = "dimanche"
+        return today   
     
     async def afficheHiScore(self,channel) :
         # Recupere les scores pour les afficher une derniere fois
@@ -681,27 +721,6 @@ class GBoT(commands.Bot):
         """
         await channel.send(self.recupereVIP())
         
-    async def on_message(self, message):
-        """
-        Evennement levé à chaque message transmis sur le serveur Discord
-
-        Args:
-            message (Discord.message): objet message renvoyé par l API Discord
-        """
-        admin = False
-        # determine si la commande est lancée par un Admin
-        if message.author.display_name == 'GToF_':
-            admin=True
-            
-        if admin and message.content.startswith(">nomine"):
-                await self.distributionRole(message.channel)
-        # Commande >efface
-        if admin and message.content.startswith(">efface"):
-            channel = self.get_channel(message.channel.id)
-            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=10)]
-            for messageAEffacer in messages :
-                await messageAEffacer.delete()       
-
     async def distributionRole (self,channel):
         # Supprime le role des sparts supremes actuels et attribut en fonction du score 
         # channel = self.get_channel(979857092603162695) # channel annonce
@@ -881,10 +900,9 @@ class GBoT(commands.Bot):
         try:        
             with open(os.path.join(GBOTPATH,"streamer.txt"),"r") as fichierLocal :
                 streamer = fichierLocal.read()
-        
         except IOError:
-             streamer=""
-             
+            streamer=""
+
         if (streamer=="" or streamer == "vide"):
             print ("\n"+ BRED + WHITE +"ERREUR :"+BBLACK+WHITE+" Impossible d'accéder au streaming du viewer. Veuillez vérifier si un streamer est bien présent sur ce créneau horaire dans le PLANNING. \nLe script continue de fonctionner..." )
             self.SauvegardeCreneauHoraire(creneauHoraire,["vide"])
@@ -1106,26 +1124,26 @@ if __name__ == "__main__":
     async def resa(ctx:commands.Context,jour:str): 
         await ctx.defer(ephemeral=True)
         jour=jour.lower()
-        if GBoT.resa_verifjour(jour) == 'False' :
+        if GBoT.commande_resa_verifjour(jour) == 'False' :
             embed = Embed(title="ERREUR :",colour= Colour.red())
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
             embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi`, `samedi` et `dimanche`.",  inline = False)
             embed.set_footer(text = 'Généré par GBoT')
             await ctx.send(embed=embed) 
-        elif GBoT.resa_droitMembreNonValide(ctx.author.display_name,jour) :
+        elif GBoT.commande_resa_droitMembreNonValide(ctx.author.display_name,jour) :
             embed = Embed(title="ERREUR :",colour= Colour.red())
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
             embed.add_field(name="Tes droits sont restreints",value="Tu n'as pas accés à cette journée de réservation car tu n'as pas cumulé assez de point pour reserver sur cette période.\n\
                             ▫️ **score >5** : accés réservation pour le lendemain.\n\
-                            ▫️ **score >10** : accés réservation les 2 jours suivants\n\
-                            ▫️ **score >20** : accés réservation les 3 jours suivants\n\
-                            ▫️ **score >30** : accés réservation sur la semaine suivante\n\
-                            1 pt se gagne quand vous etes chez un streamer du serveur durant son créneau. Vous ne marquez pas de point quand vous etes le streamer.\n\
-                            Pour vonnaitre votre score actuel, tapez `/score` dans le channel <#1037341465099120672>.",  inline = False)
+                            ▫️ **score >10** : accés réservation les 2 jours suivant.\n\
+                            ▫️ **score >20** : accés réservation les 3 jours suivant.\n\
+                            ▫️ **score >30** : accés réservation les 7 jours suivant.\n\
+                            **1 pt** se gagne quand tu est chez un streamer du serveur durant son créneau. __Tu ne marques pas de point__ quand tu es le streamer.\n\
+                            Pour vonnaitre ton score actuel, tape `/score` dans le channel <#1037341465099120672>.",  inline = False)
             embed.set_footer(text = 'Généré par GBoT')
             await ctx.send(embed=embed)         
         else:
-            listeCreneaux = await GBoT.resa_renvoisCreneau(jour)
+            listeCreneaux = await GBoT.commande_resa_renvoisCreneau(jour)
             listeOption = []
             if len(listeCreneaux)==0:
                 embed = Embed(title="ERREUR :",colour= Colour.red())
@@ -1145,7 +1163,7 @@ if __name__ == "__main__":
                 async def my_callback(interaction):
                     select.disabled = True
                     await interaction.response.edit_message(view=view)
-                    await GBoT.resa_valideCreneaux(ctx.author.id,jour,select.values)
+                    await GBoT.commande_resa_valideCreneaux(ctx.author.id,jour,select.values)
 
 
                 
