@@ -1019,14 +1019,22 @@ if __name__ == "__main__":
     @app_commands.guilds(GUILD)
     async def scoregeneral(ctx:commands.Context):
         # Commande !score
-        reponse1, reponse2 = GBoT.recupereScoresMembres()
-        await ctx.send('\n:medal: __**Score des Membres :**__ *( sur 7 jours )*\n')
-        if reponse1 != "":
-            await ctx.send(reponse1)
-        if reponse2 != "":
-            await ctx.send(reponse2)
-        await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur 7 jours vous permettra d'acceder au Grade de **VIP**\n\n")
-
+        if ctx.author.display_name == "GToF_" :
+            reponse1, reponse2 = GBoT.recupereScoresMembres()
+            await ctx.send('\n:medal: __**Score des Membres :**__ *( sur 7 jours )*\n')
+            if reponse1 != "":
+                await ctx.send(reponse1)
+            if reponse2 != "":
+                await ctx.send(reponse2)
+            await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur 7 jours vous permettra d'acceder au Grade de **VIP**\n\n")
+        else:
+            await ctx.defer(ephemeral=True)
+            embed = Embed(title="ERREUR :",colour= Colour.red())
+            embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
+            embed.add_field(name="Commande non autorisée",value="Tu n'as pas accés a la commande `/scoregeneral`.\nTu peux consulter ton score actuel en utilisant la commande `/score`.",  inline = False)
+            embed.set_footer(text = 'Généré par GBoT')
+            await ctx.send(embed=embed) 
+            
     @GBoT.hybrid_command(name = "score", description = "Obtenir les scores des Membres pour la journée en cours.")
     @app_commands.guilds(GUILD)
     async def score(ctx:commands.Context): 
