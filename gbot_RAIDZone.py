@@ -728,11 +728,11 @@ class GBoT(commands.Bot):
         listeRole= self.get_guild(channelID["guild"]).roles
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()
-        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        cur.execute("SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
         classementMembres ={}
         for data in rows :
-            (membre,score,total) = data
+            (membre,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) = data
             classementMembres[membre]=total
         self.connexionSQL.close()
         
@@ -765,12 +765,12 @@ class GBoT(commands.Bot):
         message += ":medal: Le top viewers des Sparts Suprêmes ::medal:\n\n" 
         self.connexionSQL = sqlite3.connect(os.path.join(GBOTPATH,"RAIDZone.BDD.sqlite"))
         cur = self.connexionSQL.cursor()
-        cur.execute("SELECT pseudo,score,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
+        cur.execute("SELECT lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE total>=35 ORDER BY total DESC, pseudo ASC")
         rows = cur.fetchall()
         place = 1
         scoreTotal = 0
         for data in rows :
-            (membre,score,total) = data
+            (membre,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) = data
             if scoreTotal > total :
                 place += 1
             scoreTotal=total
