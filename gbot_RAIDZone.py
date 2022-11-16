@@ -623,7 +623,7 @@ class GBoT(commands.Bot):
             elif jour == 'dimanche' : score = dimanche
             total = lundi + mardi + mercredi + jeudi + vendredi + samedi + dimanche 
             if membre == auteur.display_name.lower()   :
-                embed.add_field(name="Ton score **:",value=f"Tu obtiens le score de **{score} pt** aujourd'hui pour un cumul de **{total} pts** ces 7 derniers jours.",  inline = False)
+                embed.add_field(name="Ton score :",value=f"Tu obtiens le score de **{score} pt** aujourd'hui pour un cumul de **{total} pts** ces 7 derniers jours.",  inline = False)
         reponse = "\u200b"
         for data in rows :
             (membre,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total) = data
