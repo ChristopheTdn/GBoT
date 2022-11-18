@@ -55,6 +55,7 @@ channelID = {
     "dimanche": 1039082787417903154,
     "presence":1037347680965365791,
     "annonce":1037341418722705468,
+    "commandes-log": 1037395917919227985,
     "raid_en_cours": 1037340918937833543,
     "blabla": 1037341465099120672,
     "guild":1037338719780339752,
@@ -540,13 +541,18 @@ class GBoT(commands.Bot):
                         messageReponse += ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]+' <@'+str(membre) +'>\n'            
                 else : 
                     messageReponse += ligne + "\n"
-        channel = self.get_channel(channelID[jour])
-        messages = [messageAEffacer async for messageAEffacer in channel.history(limit=4)]
-        for messageAEffacer in messages :
-            await messageAEffacer.delete() 
-        await channel.send(messageReponse)  
         if conflitCreneau:
-            await channel.send(f"<@{str(membre)}> à généré un conflit de creneaux. ({listeDemande})")  
+            channel = self.get_channel(channelID["commandes-log"])
+            await channel.send(f'{datetime.now().strftime("%d-%m-%Y %Hh00")} : <@{str(membre)}> à généré un conflit de créneaux ({listeDemande})')  
+        else :
+            channel = self.get_channel(channelID[jour])
+            messages = [messageAEffacer async for messageAEffacer in channel.history(limit=4)]
+            for messageAEffacer in messages :
+                await messageAEffacer.delete() 
+            await channel.send(messageReponse) 
+            channel = self.get_channel(channelID["commandes-log"])
+            await channel.send(f'{datetime.now().strftime("%d-%m-%Y %Hh00")} : Reservation par <@{str(membre)}> pour la journée de {jour} ({listeDemande}).') 
+
                 
     def commande_resa_droitMembreNonValide(self,auteur,jourResa):
         auteur = str(auteur)
