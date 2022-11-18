@@ -551,7 +551,7 @@ class GBoT(commands.Bot):
                 await messageAEffacer.delete() 
             await channel.send(messageReponse) 
             channel = self.get_channel(channelID["commandes-log"])
-            await channel.send(f'{datetime.now().strftime("%d-%m-%Y %Hh00")} : Reservation par <@{str(membre)}> pour la journée de {jour} ({listeDemande}).') 
+            await channel.send(f'`{datetime.now().strftime("%c")}` > Réservation par <@{str(membre)}> pour la journée de __{jour}__ (*{listeDemande}*).') 
 
                 
     def commande_resa_droitMembreNonValide(self,auteur,jourResa):
@@ -561,6 +561,7 @@ class GBoT(commands.Bot):
         cur = self.connexionSQL.cursor()  
         cur.execute(f"SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE pseudo='{auteur}'")
         dataMembre = cur.fetchone()
+        if not dataMembre : return True
         pseudo = dataMembre[0]
         score = dataMembre[1] + dataMembre[2] + dataMembre[3] + dataMembre[4] + dataMembre[5] + dataMembre[6] + dataMembre[7]
         self.connexionSQL.close()
@@ -1086,7 +1087,7 @@ if __name__ == "__main__":
             • `/VIP` : Obtenir la liste des VIP actuel.\n\
             ")
     
-    @GBoT.hybrid_command(name = "hiscore", description = "Obtenir la date et le record de viewers du serveur pour un creneau.")
+    @GBoT.hybrid_command(name = "hiscore", description = "Obtenir la date et le record de viewers du serveur pour un créneau.")
     @app_commands.guilds(GUILD)
     async def hiscore(ctx:commands.Context): 
         # Commande !score
@@ -1112,7 +1113,7 @@ if __name__ == "__main__":
         await ctx.send(embed=embed)
             
     #######################################
-    @GBoT.hybrid_command(name = "resa", description = "reserve un creneau.")
+    @GBoT.hybrid_command(name = "resa", description = "réserve un créneau.")
     @app_commands.guilds(GUILD)
     async def resa(ctx:commands.Context,jour:str): 
         await ctx.defer(ephemeral=True)
@@ -1131,8 +1132,8 @@ if __name__ == "__main__":
                             ▫️ **score >10** : accés réservation les 2 jours suivant.\n\
                             ▫️ **score >20** : accés réservation les 3 jours suivant.\n\
                             ▫️ **score >30** : accés réservation les 7 jours suivant.\n\
-                            **1 pt** se gagne quand tu est chez un streamer du serveur durant son créneau. __Tu ne marques pas de point__ quand tu es le streamer.\n\
-                            Pour vonnaitre ton score actuel, tape `/score` dans le channel <#1037341465099120672>.",  inline = False)
+                            **1 pt** se gagne quand tu es chez un streamer du serveur durant son créneau. __Tu ne marques pas de point__ quand tu es le streamer.\n\
+                            Pour connaitre ton score actuel, tape `/score` dans le channel <#1037341465099120672>.",  inline = False)
             embed.set_footer(text = 'Généré par GBoT')
             await ctx.send(embed=embed)         
         else:
