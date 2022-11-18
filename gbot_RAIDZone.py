@@ -565,7 +565,7 @@ class GBoT(commands.Bot):
         score = dataMembre[1] + dataMembre[2] + dataMembre[3] + dataMembre[4] + dataMembre[5] + dataMembre[6] + dataMembre[7]
         self.connexionSQL.close()
 
-        dayStart = (datetime.now().weekday())
+        aujourdhui = (datetime.now().weekday())
         jourResaID = {
             "lundi": 0,
             "mardi": 1,
@@ -577,10 +577,10 @@ class GBoT(commands.Bot):
             }
         
         jourResa= jourResaID[jourResa]
-        dayDelta=dayStart  
+        dayDelta=aujourdhui
 
         if score > 30 :
-            auteurDroit = 7
+            auteurDroit = 8
         elif score > 20 :
             auteurDroit = 3
         elif score > 10 :
@@ -589,15 +589,14 @@ class GBoT(commands.Bot):
             auteurDroit = 1
         else :
             return True 
-                
+            
         for index in range(auteurDroit):
+            if dayDelta==jourResa :
+                return False          
             dayDelta += 1
             if dayDelta>6:
                 dayDelta = 0
-        if dayDelta >= jourResa :
-            return False
-        else :
-            return True
+        return True
 
     async def commande_afficheScoreMembre(self,ctx):
         # Recupere les scores pour les afficher une derniere fois
