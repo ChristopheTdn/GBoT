@@ -551,7 +551,7 @@ class GBoT(commands.Bot):
                 await messageAEffacer.delete() 
             await channel.send(messageReponse) 
             channel = self.get_channel(channelID["commandes-log"])
-            await channel.send(f'`{datetime.now().strftime("%c")}` > Réservation par <@{str(membre)}> pour la journée de __{jour}__ (*{listeDemande}*).') 
+            await channel.send(f'`{datetime.now().strftime("%c")}` > :white_check_mark: Réservation par <@{str(membre)}> pour la journée de __{jour}__ (*{listeDemande}*).') 
 
                 
     def commande_resa_droitMembreNonValide(self,auteur,jourResa):
@@ -650,6 +650,49 @@ class GBoT(commands.Bot):
     
         await ctx.send(embed=embed)
             
+        commande_annule_renvoisCreneau
+
+    async def commande_annule_renvoisCreneau(self, jour,auteur):
+        """Renvois la liste des creneau disponible pour un jour donné"""
+        channel = self.get_channel(channelID[jour])
+        messages = [MessagesChannel async for MessagesChannel in channel.history(limit=1,oldest_first=True)]
+        message = messages[0].content
+        ligneMessage = message.split("\n")
+        listeCreneaux=[]
+        
+        for ligne in  ligneMessage :
+            ligne = re.sub(r' +', ' ', ligne.strip()) #remplace les multiples espaces par un seul
+            ligneCut = ligne.split(" ")
+
+            if len(ligneCut) > 4 :
+                if str(auteur.id) in ligneCut[4] or \
+                   str(auteur.display_name) in ligneCut[4] :
+                    creneau = ligneCut[0]+" "+ligneCut[1]+" "+ligneCut[2]+" "+ligneCut[3]
+                    listeCreneaux.append(creneau)
+        return listeCreneaux  
+
+    async def commande_annule_effaceCreneaux(self,auteur,jour,creneau):
+
+        channel = self.get_channel(channelID[jour])
+        messages = [messagesChannel async for messagesChannel in channel.history(limit=1,oldest_first=True)]
+        message = messages[0].content
+        ligneMessage = message.split("\n")
+        message_sortie=""
+        for ligne in  ligneMessage :
+            ligne = re.sub(r' +', ' ', ligne.strip()) #remplace les multiples espaces par un seul
+            ligneCut = ligne.split(" ")
+            nom_streamer = ""
+            if f"{ligneCut[0]} {ligneCut[1]} {ligneCut[2]} {ligneCut[3]}" in  creneau:
+                message_sortie += f"{ligneCut[0]} {ligneCut[1]} {ligneCut[2]} {ligneCut[3]}"+"\n"
+            else :
+                message_sortie += ligne+"\n"
+        messages = [messageAEffacer async for messageAEffacer in channel.history(limit=4)]
+        for messageAEffacer in messages :
+            await messageAEffacer.delete() 
+        await channel.send(message_sortie)
+        channel = self.get_channel(channelID["commandes-log"])
+        await channel.send(f'`{datetime.now().strftime("%c")}` > :x: __Annulation__ par <@{auteur.id}> pour la journée de __{jour}__ (*{creneau}*).') 
+
 
     ####################################
     ##   FONCTIONS  COMMUNES          ##
@@ -1112,7 +1155,69 @@ if __name__ == "__main__":
         embed.set_footer(text = 'Généré par GBoT')
         await ctx.send(embed=embed)
             
-    #######################################
+
+    @GBoT.hybrid_command(name = "scoregeneral", description = "commande ADMIN : Obtenir les scores des Membres pour la journée en cours.")
+    @app_commands.guilds(GUILD)
+    async def scoregeneral(ctx:commands.Context):
+        # Commande !score
+        if ctx.author.display_name == "GToF_" :
+            reponse1, reponse2 = GBoT.recupereScoresMembres()
+            await ctx.send('\n:medal: __**Score des Membres :**__ *( sur 7 jours )*\n')
+            if reponse1 != "":
+                await ctx.send(reponse1)
+            if reponse2 != "":
+                await ctx.send(reponse2)
+            await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur 7 jours vous permettra d'acceder au Grade de **VIP**\n\n")
+        else:
+            await ctx.defer(ephemeral=True)
+            embed = Embed(title="ERREUR :",colour= Colour.red())
+            embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
+            embed.add_field(name="Commande non autorisée",value="Tu n'as pas accés a la commande `/scoregeneral`.\nTu peux consulter ton score actuel en utilisant la commande `/score`.",  inline = False)
+            embed.set_footer(text = 'Généré par GBoT')
+            await ctx.send(embed=embed) 
+
+    @GBoT.hybrid_command(name = "annule", description = "Annule un créneau.")
+    @app_commands.guilds(GUILD)
+    async def annule(ctx:commands.Context,jour:str): 
+        await ctx.defer(ephemeral=True)
+        jour=jour.lower() 
+        if GBoT.commande_resa_verifjour(jour) == 'False' :
+            embed = Embed(title="ERREUR :",colour= Colour.red())
+            embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
+            embed.add_field(name="La syntaxe du __jour__ n est pas valable",value="Les seuls jours acceptables sont `lundi`, `mardi`, `mercredi`, `jeudi`, `vendredi`, `samedi` et `dimanche`.",  inline = False)
+            embed.set_footer(text = 'Généré par GBoT')
+            await ctx.send(embed=embed) 
+            
+        else :    
+            listeCreneaux = await GBoT.commande_annule_renvoisCreneau(jour,ctx.author)
+            listeOption = []
+            if len(listeCreneaux)==0:
+                embed = Embed(title="ERREUR :",colour= Colour.red())
+                embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
+                embed.add_field(name="Absence de creneau",value=f"Il n y a pas de creneaux te concernant {jour}.",  inline = False)
+                embed.set_footer(text = 'Généré par GBoT')
+                await ctx.send(embed=embed)  
+            else :
+                for creneau in listeCreneaux :
+                    listeOption.append(SelectOption(label=creneau,emoji="🔹"))
+                select = Select(
+                    min_values=1,
+                    max_values=len(listeCreneaux),
+                    placeholder=f"Choisissez vos creneaux pour {jour} :",
+                    options=listeOption,
+                )
+                async def my_callbackCommandeAnnule(interaction):
+                    select.disabled = True
+                    await interaction.response.edit_message(view=view)
+                    await GBoT.commande_annule_effaceCreneaux(ctx.author.id,jour,select.values)
+
+            select.callback= my_callbackCommandeAnnule   
+            view = View()
+            view.add_item(select)
+            
+            await ctx.send("Choisis une réponse :", view=view) 
+        
+        #######################################
     @GBoT.hybrid_command(name = "resa", description = "réserve un créneau.")
     @app_commands.guilds(GUILD)
     async def resa(ctx:commands.Context,jour:str): 
@@ -1166,28 +1271,8 @@ if __name__ == "__main__":
             view.add_item(select)
             
             await ctx.send("Choisis une réponse :", view=view)
-
-    @GBoT.hybrid_command(name = "scoregeneral", description = "commande ADMIN : Obtenir les scores des Membres pour la journée en cours.")
-    @app_commands.guilds(GUILD)
-    async def scoregeneral(ctx:commands.Context):
-        # Commande !score
-        if ctx.author.display_name == "GToF_" :
-            reponse1, reponse2 = GBoT.recupereScoresMembres()
-            await ctx.send('\n:medal: __**Score des Membres :**__ *( sur 7 jours )*\n')
-            if reponse1 != "":
-                await ctx.send(reponse1)
-            if reponse2 != "":
-                await ctx.send(reponse2)
-            await ctx.send("\n*Chaque présence sur un creneau ajoute 1 pt. Le Cumul de point sur 7 jours vous permettra d'acceder au Grade de **VIP**\n\n")
-        else:
-            await ctx.defer(ephemeral=True)
-            embed = Embed(title="ERREUR :",colour= Colour.red())
-            embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
-            embed.add_field(name="Commande non autorisée",value="Tu n'as pas accés a la commande `/scoregeneral`.\nTu peux consulter ton score actuel en utilisant la commande `/score`.",  inline = False)
-            embed.set_footer(text = 'Généré par GBoT')
-            await ctx.send(embed=embed) 
-     
-
+    
+    ####  RUN GBOT      
     GBoT.run(TOKEN)
 
 
