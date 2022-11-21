@@ -1209,7 +1209,7 @@ if __name__ == "__main__":
                 async def my_callbackCommandeAnnule(interaction):
                     select.disabled = True
                     await interaction.response.edit_message(view=view)
-                    await GBoT.commande_annule_effaceCreneaux(ctx.author.id,jour,select.values)
+                    await GBoT.commande_annule_effaceCreneaux(ctx.author,jour,select.values)
 
             select.callback= my_callbackCommandeAnnule   
             view = View()
