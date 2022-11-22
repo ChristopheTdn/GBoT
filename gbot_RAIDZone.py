@@ -588,9 +588,10 @@ class GBoT(commands.Bot):
             auteurDroit = 2
         elif score > 5 :
             auteurDroit = 1
+        elif score > 0 :
+            return False
         else :
             return True 
-            
         for index in range(auteurDroit):
             if dayDelta==jourResa :
                 return False          
@@ -1233,6 +1234,7 @@ if __name__ == "__main__":
             embed = Embed(title="ERREUR :",colour= Colour.red())
             embed.set_thumbnail(url="https://www.su66.fr/raidzone/error.png")
             embed.add_field(name="Tes droits sont restreints",value="Tu n'as pas accés à cette journée de réservation car tu n'as pas cumulé assez de point pour reserver sur cette période.\n\
+                            ▫️ **score <=5** : accés réservation pour le jour même.\n\
                             ▫️ **score >5** : accés réservation pour le lendemain.\n\
                             ▫️ **score >10** : accés réservation les 2 jours suivant.\n\
                             ▫️ **score >20** : accés réservation les 3 jours suivant.\n\
