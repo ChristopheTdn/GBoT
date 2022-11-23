@@ -310,8 +310,37 @@ class GBoT(commands.Bot):
                 self.connexionSQL.close()
                 channel = self.get_channel(channelID["blabla"])
                 await self.afficheHiScore(channel)
-                print("fin")
-
+            if datetime.now().hour == 23 :
+                jour = self.determineJour()
+                channel = self.get_channel(channelID[jour])
+                messages = [messageAEffacer async for messageAEffacer in channel.history(limit=4)]
+                for messageAEffacer in messages :
+                    await messageAEffacer.delete()
+                messageReponse =  "00h00 - 01h00 :\n\
+01h00 - 02h00 :\n\
+02h00 - 03h00 :\n\
+03h00 - 04h00 :\n\
+04h00 - 05h00 :\n\
+05h00 - 06h00 :\n\
+06h00 - 07h00 :\n\
+07h00 - 08h00 :\n\
+08h00 - 09h00 :\n\
+09h00 - 10h00 :\n\
+10h00 - 11h00 :\n\
+11h00 - 12h00 :\n\
+12h00 - 13h00 :\n\
+13h00 - 14h00 :\n\
+14h00 - 15h00 :\n\
+15h00 - 16h00 :\n\
+16h00 - 17h00 :\n\
+17h00 - 18h00 :\n\
+18h00 - 19h00 :\n\
+19h00 - 20h00 :\n\
+20h00 - 21h00 :\n\
+21h00 - 22h00 :\n\
+22h00 - 23h00 :\n\
+23h00 - 00h00 :\n"
+                await channel.send(messageReponse)
     async def appelSessionMembres(self,timing_sessionMembres):
         await self.wait_until_ready()
         while not self.is_closed():
