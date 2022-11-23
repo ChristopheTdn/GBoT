@@ -612,15 +612,16 @@ class GBoT(commands.Bot):
         if score > 30 :
             auteurDroit = 8
         elif score > 20 :
-            auteurDroit = 3
+            auteurDroit = 4
         elif score > 10 :
-            auteurDroit = 2
+            auteurDroit = 3
         elif score > 5 :
-            auteurDroit = 1
+            auteurDroit = 2
         elif score > 0 and dayDelta==jourResa :
             return False
         else :
-            return True 
+            return True
+
         for index in range(auteurDroit):
             if dayDelta==jourResa :
                 return False          
