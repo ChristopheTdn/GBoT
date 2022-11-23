@@ -211,7 +211,7 @@ class GBoT(commands.Bot):
                 self.connexionSQL.close() 
                 print ("Stats Journalière remise a zero")
             
-        if datetime.now().minute == 59 :
+        if datetime.now().minute == 59 : 
 
             with open(os.path.join(GBOTPATH,"chatters.txt"),"r") as fichier:
                 chatters = fichier.read()
