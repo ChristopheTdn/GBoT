@@ -588,7 +588,7 @@ class GBoT(commands.Bot):
             auteurDroit = 2
         elif score > 5 :
             auteurDroit = 1
-        elif score > 0 :
+        elif score > 0 and dayDelta==jourResa :
             return False
         else :
             return True 
