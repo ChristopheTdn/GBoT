@@ -681,7 +681,7 @@ class GBoT(commands.Bot):
     
         await ctx.send(embed=embed)
             
-        commande_annule_renvoisCreneau
+
 
     async def commande_annule_renvoisCreneau(self, jour,auteur):
         """Renvois la liste des creneau disponible pour un jour donné"""
@@ -1157,6 +1157,9 @@ if __name__ == "__main__":
             • `/discord` : Obtenir le lien à diffuser pour rejoindre le discord Membres.\n\
             • `/raid` : tuto pour réaliser un raid.\n\
             • `/score` : Obtenir les scores des Membres pour la journée en cours.\n\
+            • `/hiscore` : renvois le meilleur score du serveur.\n\
+            • `/resa` : reserve un creneau.\n\
+            • `/annule` : efface un creneau.\n\
             • `/streamer` : renvois le streamer actuel du créneau horaire.\n\
             • `/VIP` : Obtenir la liste des VIP actuel.\n\
             ")
@@ -1295,8 +1298,6 @@ if __name__ == "__main__":
                     select.disabled = True
                     await interaction.response.edit_message(view=view)
                     await GBoT.commande_resa_valideCreneaux(ctx.author.id,jour,select.values)
-
-
                 
             select.callback= my_callback   
             view = View()
