@@ -1304,6 +1304,35 @@ if __name__ == "__main__":
             view.add_item(select)
             
             await ctx.send("Choisis une réponse :", view=view)
+
+    @GBoT.hybrid_command(name = "welcome", description = "Message de bienvenue aux nouveaux arrivants.")
+    @app_commands.guilds(GUILD)
+    async def welcome(ctx:commands.Context):    
+        await ctx.send("Bonjour aux nouveaux arrivants.\n\n\
+__**PRO TIPS :**__\n\
+Avoir lu le <#1037341418722705468> dans son intégralité est un bon point départ sur ce serveur.\n\n\
+Après tu pourras prendre des créneaux pour streamer sur la RAID Z:o2:ne :\n\
+ • Une commande `/resa`  te permet de réserver sans avoir à faire de ticket pour remplir les créneaux de la semaine.\n\
+ • La commande `/resa` peut être saisie sur le Channel <#1037341465099120672>. (pas de copier/coller)\n\n\
+ • Acceder a la commande `/resa` est soumis a condition de score :\n\
+                :white_small_square:score <= 5  : accès réservation pour le jour même\n\
+                :white_small_square:score > 5  : accès réservation pour le jour même et le lendemain\n\
+                :white_small_square:score > 10 : accès réservation pour les 2 jours suivant\n\
+                :white_small_square:score >20 : accès réservation pour les 3 jours suivant\n\
+                :white_small_square:score >30 : accès réservation pour les 7 jours suivant.\n\
+ • 1 pt se gagne quand tu es chez un streamer du serveur durant son créneau.\n\n\
+ • Tu dois lier ton compte discord à **twitch **:\n\
+   __Via PC :__\n\
+      :white_small_square: Tu vas dans les paramètres de discord, tu vas dans \"Connexion\", tu sélectionnes le logo \"Twitch\" et la liaison se fait. Vérifiez bien que le \*Afficher sur mon profil*\" soit bien coché.\n\n\
+   __Via Téléphone :__\n\
+      :white_small_square: Tu vas dans les paramètres de discord, tu vas dans \"Connexion\", tu cliques en haut à droite sur \"Ajouter\" , tu sélectionnes le logo \"Twitch\" et la liaison se fait. Vérifie bien que le \"*Afficher sur mon profil*\" soit bien coché.\n\n\
+• Pour la pub de ton compte twitch, ça ce fait dans la rubrique <#1037345800281395341>.\n\n\
+• Si problèmes ou questions, tu peux les poser ici même, ou ouvrir un Ticket dans <#1037340841045397616>.\n\n\
+Bon stream !!!\n\n\
+*Staff Raid Z:o2:ne*")
+    
+    
+    
     
     ####  RUN GBOT      
     GBoT.run(TOKEN)
