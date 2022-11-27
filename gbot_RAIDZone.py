@@ -1321,13 +1321,9 @@ Après tu pourras prendre des créneaux pour streamer sur la RAID Z:o2:ne :\n\
                 :white_small_square:score >20 : accès réservation pour les 3 jours suivant\n\
                 :white_small_square:score >30 : accès réservation pour les 7 jours suivant.\n\
  • 1 pt se gagne quand tu es chez un streamer du serveur durant son créneau.\n\n\
- • Tu dois lier ton compte discord à **twitch **:\n\
-   __Via PC :__\n\
-      :white_small_square: Tu vas dans les paramètres de discord, tu vas dans \"Connexion\", tu sélectionnes le logo \"Twitch\" et la liaison se fait. Vérifiez bien que le \*Afficher sur mon profil*\" soit bien coché.\n\n\
-   __Via Téléphone :__\n\
-      :white_small_square: Tu vas dans les paramètres de discord, tu vas dans \"Connexion\", tu cliques en haut à droite sur \"Ajouter\" , tu sélectionnes le logo \"Twitch\" et la liaison se fait. Vérifie bien que le \"*Afficher sur mon profil*\" soit bien coché.\n\n\
-• Pour la pub de ton compte twitch, ça ce fait dans la rubrique <#1037345800281395341>.\n\n\
-• Si problèmes ou questions, tu peux les poser ici même, ou ouvrir un Ticket dans <#1037340841045397616>.\n\n\
+ • Tu dois lier ton compte discord à **twitch **: utilise la commande `/link` pour plus d'info\n\
+ • Pour la pub de ton compte twitch, ça ce fait dans la rubrique <#1037345800281395341>.\n\n\
+ • Si problèmes ou questions, tu peux les poser ici même, ou ouvrir un Ticket dans <#1037340841045397616>.\n\n\
 Bon stream !!!\n\n\
 *Staff Raid Z:o2:ne*")
     
