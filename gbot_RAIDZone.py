@@ -590,9 +590,13 @@ class GBoT(commands.Bot):
         cur = self.connexionSQL.cursor()  
         cur.execute(f"SELECT pseudo,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,total FROM 'Membre' WHERE pseudo='{auteur}'")
         dataMembre = cur.fetchone()
-        if not dataMembre : return True
-        pseudo = dataMembre[0]
-        score = dataMembre[1] + dataMembre[2] + dataMembre[3] + dataMembre[4] + dataMembre[5] + dataMembre[6] + dataMembre[7]
+        if not dataMembre :
+            pseudo= auteur
+            score = 0
+            print (f'{RED}ATTENTION :{WHITE} inscription de {auteur} avec un score de {RED}0{WHITE}.')
+        else:
+            pseudo = dataMembre[0]
+            score = dataMembre[1] + dataMembre[2] + dataMembre[3] + dataMembre[4] + dataMembre[5] + dataMembre[6] + dataMembre[7]
         self.connexionSQL.close()
 
         aujourdhui = (datetime.now().weekday())
@@ -617,7 +621,7 @@ class GBoT(commands.Bot):
             auteurDroit = 3
         elif score > 5 :
             auteurDroit = 2
-        elif score > 0 and dayDelta==jourResa :
+        elif score >= 0 and dayDelta==jourResa :
             return False
         else :
             return True
